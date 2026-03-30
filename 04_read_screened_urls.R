@@ -1,18 +1,14 @@
 #### R SCRIPT PURPOSE: 
-#### Pulls the text from RSS Feed articles whose descriptions contain key word(s).
-#### Runs 1X/DAY
+#### Pulls the text from RSS Feed articles whose descriptions contain key word(s) and reads in the full text.
+#### Runs weekly
 
-#### In order for this script to work: 
-#### The user must have accounts and access to all news sources and be logged into each account.
 #### The user must have Chrome installed since it opens a Chrome instance to read each article.
 
-#Checking if pacman is installed, installing if missing, and loading it
 if (!require("pacman")) {
   install.packages("pacman")
   library(pacman)
-} #to install, load, and update multiple packages at one once
+}
 
-#Installing (if not already installed) and loading necessary R packages
 p_load(tidyverse, 
        janitor, 
        purrr, 
@@ -24,14 +20,9 @@ p_load(tidyverse,
        chromote,
        readxl)
 
-#garbage collection; removing things from memory that are no longer in use
 gc()
 
 
-### Import and Organize Data from R Script 02 ###
-
-
-#importing all RSS Feed articles that have been screened with key words
 unread_screened_feed <- read_csv("C:/AOS_db/data/02_rss_feed_screened_dfs.csv")
 
 ##Create df of urls from Gov Exec and Stateline Democracy to add back in at the end since they already have full text in the rss feed.
@@ -85,7 +76,7 @@ unread_screened_feed_no_pdf <- unread_screened_feed %>%
   filter(!clean_title %in% already_read_pdfs_clean_titles,
          !title_original %in% already_read_pdfs_titles)
 
-##Pull in and eliminate from the list any articles that were already scraped in the 04 scripts. Filter out articles that weren't read in properly and are under 150 characters
+##Pull in and eliminate from the list any articles that were already scraped in the 04 scripts. Filter out articles that weren't read in fully (generally under 150 characters).
 scraped_articles <- read_csv("C:/AOS_db/data/04_rss_feed_screened_read_articles_dfs.csv") %>%
   group_by(title_original, description, URL, source) %>%
   slice_max(., order_by = pub_date) %>%
@@ -105,7 +96,7 @@ scraped_articles <- read_csv("C:/AOS_db/data/04_rss_feed_screened_read_articles_
          clean_title = str_trim(clean_title))
 
 already_scraped_articles <- unique(scraped_articles$clean_title)
-#writeLines(already_scraped_articles, "C:/AOS_db/data/04_scraped_articles.txt")
+
 
 screened_feed_to_read <- unread_screened_feed_no_pdf %>%
   filter(!clean_title %in% already_scraped_articles)
@@ -132,7 +123,6 @@ screened_feed_to_read <- screened_feed_to_read %>%
 
 write_csv(screened_feed_to_read, "C:/AOS_db/data/04_screened_feed_to_read.csv")
 
-##Make a df of already read-in articles
 already_read_urls <- unread_screened_feed %>%
   filter(!title %in% screened_feed_to_read$title)
 
@@ -207,6 +197,7 @@ grab_text2 <- function(url_test) {
   url_test 
   }
 
+#Save The Hill articles as pdfs
 grab_text3 <- function(url_test) {
   b <- ChromoteSession$new() 
   Sys.sleep(4)  
@@ -226,6 +217,7 @@ grab_text3 <- function(url_test) {
   
 }
 
+#Read in articles from all other sources.
 grab_text4 <- function(url_test) {
   b <- ChromoteSession$new()
   Sys.sleep(4)
@@ -258,7 +250,6 @@ for(i in 1:nrow(screened_feed_to_read)){
   } else if(screened_rss_feed_db_split$source == "Stat News") {screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = map(URL, possibly(grab_text2)))
   } else if(screened_rss_feed_db_split$source == "The Hill"){screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = map(URL, possibly(grab_text3)))} else{screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = map(URL, possibly(grab_text4)))}
   
-  #combine newly scraped with previously scraped data
   screened_rss_feed_db_all <- bind_rows(screened_rss_feed_db_split, screened_rss_feed_db_all)
   
   ticker <- ticker + 1
@@ -273,8 +264,7 @@ screened_rss_feed_db_text <- screened_rss_feed_db_all %>%
          url_text = ifelse(is.null(url_text), description_original, url_text))
 
 
-### Getting Data Ready for Next Script in Sequence (04) ###
-#combine previously attempted scraped URL and the newly scraped URLs
+#Combine previously attempted scraped URL and the newly scraped URLs
 screened_rss_feed_db_text <- bind_rows(already_read_urls, screened_rss_feed_db_text) %>% 
   group_by(title, URL, source) %>%
   slice_max(., order_by = desc(pub_date), n = 1, with_ties = FALSE) %>%
@@ -289,5 +279,5 @@ screened_rss_feed_db_text <- bind_rows(already_read_urls, screened_rss_feed_db_t
 screened_rss_feed_db_text <- bind_rows(screened_rss_feed_db_text, govex_sl) %>%
   distinct()
 
-#creating csv file with most up to date scraped URL text
+#Creating csv file with all scraped URL text
 write_csv(screened_rss_feed_db_text, "C:/AOS_db/data/04_rss_feed_screened_read_articles_dfs.csv")
