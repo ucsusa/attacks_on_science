@@ -1,7 +1,6 @@
 #### R SCRIPT PURPOSE: 
 #### Pulls RSS feeds daily from Script 01 and filters down with list of search terms based on descriptions and titles.
-
-### Logistics for R Script ###
+####Runs Daily
 
 if (!require("pacman")) {
   install.packages("pacman")
@@ -17,7 +16,7 @@ gc()
 
 setwd("C:/AOS_db/data/")
 
-### Compiling RSS Feed Data from Previous Three Days ###
+### Compiling RSS Feed Data from Previous Three Days, generally reflecting a news cycle ###
 
 all_data_files <- list.files(include.dirs = FALSE)
 
@@ -52,7 +51,7 @@ search_terms <- read_excel("C:/AOS_db/info_tables/Search Terms AOS.xlsx")
 search_terms <- search_terms %>%
   mutate(search_term = tolower(search_term))
 
-##Break the search terms into 3 categories - government, science, topics, and negative verbs. We filter by government OR science AND topics AND negative verbs
+##Break the search terms into 3 categories - government, science, topics, and negative verbs. We filter by government OR science AND topics AND negative verbs at this stage
 gov_terms <- search_terms %>%
   filter(category == "government")
 gov_terms <- gov_terms$search_term %>% str_trim(., side = "both")

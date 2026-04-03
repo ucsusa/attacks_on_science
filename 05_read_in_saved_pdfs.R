@@ -1,5 +1,5 @@
 #### R SCRIPT PURPOSE: 
-#### Filters out unread/misread articles and saves pdfs
+#### Saves pdf versions of unread or misread articles
 #### Runs weekly
 
 if (!require("pacman")) {
@@ -68,7 +68,7 @@ unread_screened_feed_no_pdf <- unread_screened_feed %>%
   filter(!clean_title %in% already_read_pdfs_clean_titles,
          !title_original %in% already_read_pdfs_titles)
 
-##Eliminate from the list any articles that were already scraped in the 04 scripts. Filter out articles that weren't read in fully and are under 150 characters
+##Eliminate from the list any articles that were already scraped in the 04 scripts. Filter out articles that weren't read in fully and are under 150 characters. There are some remaining filters for sources that we eliminated early on.
 scraped_articles <- read_csv("C:/AOS_db/data/04_rss_feed_screened_read_articles_dfs.csv") %>%
   group_by(title_original, description, URL, source) %>%
   slice_max(., order_by = pub_date) %>%

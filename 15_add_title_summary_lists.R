@@ -1,16 +1,15 @@
-##This script appends the appropriate definitions from the process document to the end of the url text for inclusion in generic summaries.
+#### R SCRIPT PURPOSE: 
+####This script appends the appropriate definitions from the process document to the end of the url text for inclusion in generic summaries.
+####Runs weekly
 
-#Checking if pacman is installed, installing if missing, and loading it
 if (!require("pacman")) {
   install.packages("pacman")
   library(pacman)
-} #to install, load, and update multiple packages at one once
+}
 
-#Installing (if not already installed) and loading necessary R packages
-p_load(tidyverse, #to wrangle and organize noisy data
-       janitor) #to read, format, create etc. excel files
+p_load(tidyverse,
+       janitor) 
 
-##Read in attacks on science
 human_coding_spreadsheet <- read_csv("C:/AOS_db/data/14_coding_spreadsheet_unique_id_si.csv")
 
 ###Read in type, topic, and enacted descriptions
@@ -20,7 +19,7 @@ process_descriptions <- read_csv("C:/AOS_db/info_tables/999_aos_type_topic_defin
          specific_category_name = gsub("\\/", "_", tolower(specific_category_name))) %>%
   select(specific_category_name, specific_category_summary_description)
 
-##Pivot to long format for table join
+
 aoses_long <- human_coding_spreadsheet %>%
   clean_names %>%
   pivot_longer(., cols = `agency_appointments`:`targeting_scientists_based_on_identity`, names_to = "attack_type", values_to = "type_response") %>%
@@ -29,7 +28,6 @@ aoses_long <- human_coding_spreadsheet %>%
   filter(type_response == 1|topic_response != "0"|enacted_value == 1)
 
 
-#This function makes a list of strings comma delimited and adds and if more than 2 in a list.
 make_a_list <- function(x){
   if (length(unique(x)) == 0) {
     formatted_string <- ""
@@ -43,7 +41,6 @@ make_a_list <- function(x){
   }
 }
 
-#This function makes the first letter in a sentence lower case.
 make_first_letter_lowercase <- function(x) {
   first_letter <- tolower(substr(x, 1, 1))
   rest_of_string <- substr(x, 2, nchar(x))
@@ -51,9 +48,6 @@ make_first_letter_lowercase <- function(x) {
 }
 
 firstup <- function(x) {
-  # Convert the entire string to lowercase first, if needed
-  # x <- tolower(x) 
-  # Capitalize the first character and combine with the rest of the string
   substr(x, 1, 1) <- toupper(substr(x, 1, 1))
   return(x)
 }
@@ -101,11 +95,10 @@ df_enacted <- df_enacted %>%
   unique()
 
 
-df2 <- left_join(df_type, df_topic)
+aos_type_topic <- left_join(df_type, df_topic)
 
-df2 <- left_join(df2, df_enacted)
+aos_type_topic <- left_join(aos_type_topic, df_enacted)
 
-##Modify agencies involved into the long format
 aoses_agencies <- aoses_long %>%
   select(agg_objectid, agencies_involved) %>%
   unique() %>%
@@ -119,20 +112,20 @@ aoses_agencies_lists <- aoses_agencies %>%
   unique() %>%
   mutate(attack_attacks = ifelse(str_count(agencies_involved_list, ",") > 1, 'attack', 'attacks'))
 
-df2 <- left_join(df2, aoses_agencies_lists)
+aos_type_topic <- left_join(aos_type_topic, aoses_agencies_lists)
 
-##Add all data back to df
 aos_data_df <- aoses_long %>%
   select(headline, full_date, link, article_source, article_description, si_mention, gss_mention, agencies_involved, coders, aos_presence, agg_objectid, potential_si_violation) %>%
   mutate(full_date = as.character(full_date)) %>%
   unique()
 
-df2 <- df2 %>%
+aos_type_topic <- aos_type_topic %>%
   mutate(across(everything(), as.character)) %>%
   left_join(., aos_data_df) %>%
   unique()
 
-aos_summaries <- df2 %>%
+##We are not using the titles in the final dataset as they were too choppy.
+aos_summaries <- aos_type_topic %>%
   mutate(attack_title = paste(agencies_involved_list, attack_attacks, "science with", attack_type_list, "negatively impacting", attack_topic_list),
          article_description = paste0(firstup(article_description), "."),
          attack_title = gsub("_", " ", attack_title),

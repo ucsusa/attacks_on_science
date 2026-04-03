@@ -1,17 +1,16 @@
-##This script modifies the date to a week, month, and a year.
+#### R SCRIPT PURPOSE: 
+####This script modifies the date to a week, month, and a year.
+####Runs weekly
 
-#Checking if pacman is installed, installing if missing, and loading it
 if (!require("pacman")) {
   install.packages("pacman")
   library(pacman)
-} #to install, load, and update multiple packages at one once
+}
 
-#Installing (if not already installed) and loading necessary R packages
-p_load(tidyverse, #to wrangle and organize noisy data
-       scales) #to read, format, create etc. excel files
+p_load(tidyverse, 
+       scales) 
 
 fully_coded_read <- read_csv("C:/AOS_db/data/15_aos_titles_summaries.csv")
-
 
 fully_coded_read <- fully_coded_read %>%
   select(headline, full_date, link, article_source, article_description, si_mention, gss_mention, agencies_involved, coders, aos_presence, agg_objectid, potential_si_violation, attack_topic_list, attack_type_list, enacted_list, agencies_involved_list, attack_title, attack_summary) %>%

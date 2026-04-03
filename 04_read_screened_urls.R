@@ -76,7 +76,7 @@ unread_screened_feed_no_pdf <- unread_screened_feed %>%
   filter(!clean_title %in% already_read_pdfs_clean_titles,
          !title_original %in% already_read_pdfs_titles)
 
-##Pull in and eliminate from the list any articles that were already scraped in the 04 scripts. Filter out articles that weren't read in fully (generally under 150 characters).
+##Pull in and eliminate from the list any articles that were already scraped in the 04 scripts. Filter out articles that weren't read in fully (generally under 150 characters). There are some remaining filters for sources that we eliminated early on.
 scraped_articles <- read_csv("C:/AOS_db/data/04_rss_feed_screened_read_articles_dfs.csv") %>%
   group_by(title_original, description, URL, source) %>%
   slice_max(., order_by = pub_date) %>%
@@ -101,7 +101,7 @@ already_scraped_articles <- unique(scraped_articles$clean_title)
 screened_feed_to_read <- unread_screened_feed_no_pdf %>%
   filter(!clean_title %in% already_scraped_articles)
 
-##Eliminate Gov Exec and Stateline from the automated search since rss feeds have the full text included, and that is the description now.
+##Eliminate Gov Exec and Stateline from the automated search since rss feeds have the full text included as the description.
 screened_feed_to_read <- screened_feed_to_read %>%
   filter(!source %in% c("Gov Exec", "Stateline Democracy"))
 
@@ -263,8 +263,6 @@ screened_rss_feed_db_text <- screened_rss_feed_db_all %>%
          url_text = ifelse(is.na(url_text), description_original, url_text),
          url_text = ifelse(is.null(url_text), description_original, url_text))
 
-
-#Combine previously attempted scraped URL and the newly scraped URLs
 screened_rss_feed_db_text <- bind_rows(already_read_urls, screened_rss_feed_db_text) %>% 
   group_by(title, URL, source) %>%
   slice_max(., order_by = desc(pub_date), n = 1, with_ties = FALSE) %>%
@@ -279,5 +277,4 @@ screened_rss_feed_db_text <- bind_rows(already_read_urls, screened_rss_feed_db_t
 screened_rss_feed_db_text <- bind_rows(screened_rss_feed_db_text, govex_sl) %>%
   distinct()
 
-#Creating csv file with all scraped URL text
 write_csv(screened_rss_feed_db_text, "C:/AOS_db/data/04_rss_feed_screened_read_articles_dfs.csv")

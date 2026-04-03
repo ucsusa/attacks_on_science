@@ -1,15 +1,19 @@
-##This script tags article text that mentions gold standard science or scientific integrity and saves a csv with those columns
+#### R SCRIPT PURPOSE: 
+#### Tags articles with mention of gold standard science or scientific integrity
+#### Runs weekly
 
-library(tidyverse)
+if (!require("pacman")) {
+  install.packages("pacman")
+  library(pacman)
+} 
 
-#Read in data
-df0 <- read_csv("C:/AOS_db/data/08_aos_clean_gov.csv")
+p_load(tidyverse)
 
+aos_clean_agency <- read_csv("C:/AOS_db/data/08_aos_clean_gov.csv")
 
-#tagging when SI and GSS are mentioned in the article text
-df1  <-  df0 %>%  
-  mutate(SI_mention = str_detect(url_text, "scientific integrity"), #writing code to detect mentions of SI in text
-         GSS_mention = str_detect(url_text, "gold standard science|gold-standard science|golden standard of science")) #writing code to detect mentions of GSS in text
+aos_si_gss <- aos_clean_agency %>%  
+  mutate(SI_mention = str_detect(url_text, "scientific integrity"), 
+         GSS_mention = str_detect(url_text, "gold standard science|gold-standard science|golden standard of science")) 
 
-write_csv(df1, "C:/AOS_db/data/09_aos_clean_gov_si_gss.csv")
+write_csv(aos_si_gss, "C:/AOS_db/data/09_aos_clean_gov_si_gss.csv")
 

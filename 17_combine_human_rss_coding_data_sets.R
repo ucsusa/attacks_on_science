@@ -1,7 +1,14 @@
-##This script combines and formats the human coded and the rss feed data sets.
+#### R SCRIPT PURPOSE: 
+####This script combines and formats the human coded and the rss feed data sets.
+####Runs weekly
 
-library(tidyverse)
-library(scales)
+if (!require("pacman")) {
+  install.packages("pacman")
+  library(pacman)
+}
+
+p_load(tidyverse, 
+       scales) 
 
 rss <- read_csv("C:/AOS_db/data/16_fully_coded_url_read_clean_tagged_dates.csv") %>%
   select(agg_objectid, full_date, week_month_year, link, article_source, agencies_involved_list, si_mention, gss_mention, potential_si_violation, attack_topic_list, attack_type_list, enacted_list, attack_summary)
