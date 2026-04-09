@@ -18,7 +18,7 @@ gov_agencies <- read_excel("C:/AOS_db/info_tables/Search Terms AOS.xlsx") %>%
   filter(category == "government") %>%
   mutate(search_term_lower = tolower(search_term))
 
-### Tagging government Aaencies in the first third of the article text since this portion of articles includes most of the content, and the rest may include more context less directly related to the attack if present ###
+### Tagging government Agencies in the first third of the article text since this portion of articles includes most of the content, and the rest may include more context less directly related to the attack if present ###
 
 clean_aos_third  <- clean_aos %>%
   mutate(char_length = str_length(url_text), 
@@ -26,7 +26,8 @@ clean_aos_third  <- clean_aos %>%
          use_text = str_sub(url_text, 1, third_length),
          use_text = tolower(use_text))
 
-##Search the truncated url_text for each of the government agencies and return the government agencies as a comma delimited list.
+##Search the truncated url_text for each of the government agencies and return the government agencies as a comma delimited list. Also removes agencies that appear in the article multiple times.
+
 aos_clean_agency <- data.frame()
 
 

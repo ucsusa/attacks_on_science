@@ -17,6 +17,7 @@ gc()
 
 
 ### Identify and read the text in the saved pdfs into the data frame so that the fully read articles can then be screened using the search terms categories: government, science, negative verbs, and topics. The article text must have at least one word from each of these categories of search terms.
+### Titles require adequate cleaning (no punctuation, no capitals, no extra spaces, no source names in them) in order to join with saved pdf articles and other dfs.
 
 screened_articles <- read_csv("C:/AOS_db/data/02_rss_feed_screened_dfs.csv") %>%
   mutate(clean_title = tolower(title),
@@ -104,6 +105,7 @@ screened_articles_w_pdf <- left_join(need_pdf, already_read_pdfs_titles_df, by =
   rename(title = title.y) %>%
   select(-title.x)
 
+##Join appropriate pdf from the folder, pull in text into the url_text column for articles not scraped properly.
 checking_4_read_all <- data.frame(stringsAsFactors = FALSE)
 
 setwd("C:/AOS_db/pdf_articles")
@@ -155,6 +157,7 @@ screened_rss_feed_db_text <- screened_rss_feed_db_text %>%
 
 write_csv(screened_rss_feed_db_text, "C:/AOS_db/data/06_screened_read_articles_complete.csv")
 
+##Read in search terms and create categories of them to filter the full text articles. To pass through this filter they must have one work from each category of filter: science, government, topics, and negative verbs.
 
 search_terms <- read_excel("C:/AOS_db/info_tables/Search Terms AOS.xlsx")
 
@@ -233,7 +236,7 @@ aos_raw <- aos_raw %>%
 write_csv(aos_raw, "C:/AOS_db/data/06_aos_raw.csv")
 
 
-###Create a data frame of articles that are screened out and were read in fully for the data hygience scripts.
+###Create a data frame of articles that are screened out and were read in fully for the data hygiene scripts.
 
 screened_fully_read <- aos_raw
 fully_read_articles <- screened_rss_feed_db_text

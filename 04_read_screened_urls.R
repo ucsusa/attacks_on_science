@@ -16,7 +16,8 @@ p_load(tidyverse,
        R.utils,
        keyring, 
        polite, 
-       httr, 
+       httr,
+       httr2,
        chromote,
        readxl)
 
@@ -76,7 +77,7 @@ unread_screened_feed_no_pdf <- unread_screened_feed %>%
   filter(!clean_title %in% already_read_pdfs_clean_titles,
          !title_original %in% already_read_pdfs_titles)
 
-##Pull in and eliminate from the list any articles that were already scraped in the 04 scripts. Filter out articles that weren't read in fully (generally under 150 characters). There are some remaining filters for sources that we eliminated early on.
+##Pull in and eliminate from the list any articles that were already scraped in previous 04 runs. Filter out articles that weren't read in fully (generally under 150 characters). There are some remaining filters for sources that we eliminated early on.
 scraped_articles <- read_csv("C:/AOS_db/data/04_rss_feed_screened_read_articles_dfs.csv") %>%
   group_by(title_original, description, URL, source) %>%
   slice_max(., order_by = pub_date) %>%
@@ -85,7 +86,7 @@ scraped_articles <- read_csv("C:/AOS_db/data/04_rss_feed_screened_read_articles_
   unique() %>%
   mutate(num_chars = nchar(url_text)) %>%
   unique() %>%
-  filter(!grepl("You have been blocked from The New York Times|Press & Hold to confirm you are|Something went wrong. Please try again later.", url_text),
+  filter(!grepl("Press & Hold to confirm you are|Something went wrong. Please try again later.", url_text),
          source != "Gov Info",
          num_chars > 150,
          URL != "https://washingtonpost.com") %>%
@@ -119,7 +120,9 @@ human_coded_clean_titles <- unique(human_coding_spreadsheet$clean_title)
 
 screened_feed_to_read <- screened_feed_to_read %>%
   filter(!title_original %in% human_coded_titles,
-         !clean_title %in% human_coded_clean_titles)
+         !clean_title %in% human_coded_clean_titles,
+         !source %in% c("Washington Post", "New York Times")) %>%
+  arrange(sample(n()))
 
 write_csv(screened_feed_to_read, "C:/AOS_db/data/04_screened_feed_to_read.csv")
 
@@ -197,24 +200,21 @@ grab_text2 <- function(url_test) {
   url_test 
   }
 
-#Save The Hill articles as pdfs
+#Scrape The Hill articles
 grab_text3 <- function(url_test) {
-  b <- ChromoteSession$new() 
-  Sys.sleep(4)  
-  b$Network$setUserAgentOverride(userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
+  resp <- request(url_test) %>% 
+    req_user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36") %>%
+    req_perform()
   Sys.sleep(4)
-  b$Page$navigate(url_test)
+  html <- resp %>% resp_body_html()
   Sys.sleep(4)
-  with_user_agent <- b$Runtime$evaluate("document.querySelector('html').outerHTML")$result$value
-  Sys.sleep(4)
-  pdf_data <- b$Page$printToPDF(printBackground = TRUE)
-  
-  filename <- paste0("C:/AOS_db/pdf_articles/", 
-                     screened_rss_feed_db_split$title, 
-                     ".pdf")
-  
-  writeBin(base64enc::base64decode(pdf_data$data), filename)
-  
+  url_test <- html %>% 
+    html_elements("p") %>% 
+    html_text() %>%
+    as.character() %>%
+    paste(., collapse = ". ")
+  url_test
+  Sys.sleep(10)
 }
 
 #Read in articles from all other sources.
@@ -248,7 +248,7 @@ for(i in 1:nrow(screened_feed_to_read)){
     screened_rss_feed_db_split <- mutate(
       screened_rss_feed_db_split,                                         url_text = map(URL, possibly(grab_text1)))
   } else if(screened_rss_feed_db_split$source == "Stat News") {screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = map(URL, possibly(grab_text2)))
-  } else if(screened_rss_feed_db_split$source == "The Hill"){screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = map(URL, possibly(grab_text3)))} else{screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = map(URL, possibly(grab_text4)))}
+  } else if (screened_rss_feed_db_split$source == "The Hill"){screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = map(URL, possibly(grab_text4)))} else{screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = map(URL, possibly(grab_text4)))}
   
   screened_rss_feed_db_all <- bind_rows(screened_rss_feed_db_split, screened_rss_feed_db_all)
   
@@ -256,6 +256,8 @@ for(i in 1:nrow(screened_feed_to_read)){
   print(ticker)
   Sys.sleep(1)
 }
+
+#screened_rss_feed_db_split, url_text = map(URL, possibly(grab_text3)))
 
 screened_rss_feed_db_text <- screened_rss_feed_db_all %>%
   rowwise() %>%

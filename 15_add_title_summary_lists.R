@@ -28,6 +28,7 @@ aoses_long <- human_coding_spreadsheet %>%
   filter(type_response == 1|topic_response != "0"|enacted_value == 1)
 
 
+## These functions set up the formatting for the lists that are used in the attack summaries for capital letters, oxford commas, title case.
 make_a_list <- function(x){
   if (length(unique(x)) == 0) {
     formatted_string <- ""
@@ -52,6 +53,8 @@ firstup <- function(x) {
   return(x)
 }
 
+
+##We reformat and join the types and topic descriptions in order to create lists of descriptions or types/topics when an attack on science has been coded for multiples of these.
 
 df_type <- aoses_long %>%
   filter(type_response == 1) %>%

@@ -2,37 +2,21 @@
 #### Formats the screened (2x) articles into a spreadsheet for human coders
 #### Runs 1X/WEEK
 
-### Logistics for R Script ###
-
-
-#Checking if pacman is installed, installing if missing, and loading it
 if (!require("pacman")) {
   install.packages("pacman")
   library(pacman)
-} #to install, load, and update multiple packages at one once
+} 
 
-#Installing (if not already installed) and loading necessary R packages
-p_load(tidyverse, #to wrangle and organize noisy data
+p_load(tidyverse, 
        readxl,
-       openxlsx) #to read, format, create etc. excel files
+       openxlsx) 
 
-
-### Format Data for Human Coding ###
-
-
-#import data from previous R Script
 the_data_to_code <- read_csv("C:/AOS_db/data/10_aoses_clean_aggregate_aos.csv")
 
-### Get Data Ready for Next Script ###
-
-#create new data set
-
-
-#Filter data to after December 16th
 the_data_to_code <- the_data_to_code %>%
   mutate(pub_date = as.Date(pub_date))
 
-#Filter duplicates to articles with highest character url_text, or read in articles
+##Filter out multiples that have lower numbers of characters because they were likely not fully read in.
 the_data_to_code <- the_data_to_code %>%
   mutate(num_chars = nchar(url_text)) %>%
   group_by(pub_date, title, source) %>%
@@ -53,21 +37,17 @@ articles_never_scraped <- articles_to_scrape %>%
 the_data_to_code <- bind_rows(the_data_to_code, articles_never_scraped)
 
 
-#formatting data into human coding spreadsheet
+##Set up columns and formatting for human coding. AOS Presence of NA means nobody has yet coded that article.
 human_coding_spreadsheet <- the_data_to_code %>%
   select(-c(url_text, description, url_text_original)) %>%
-  #changing names of the following columns
  rename(`FULL DATE` = pub_date,
          HEADLINE = title,
          LINK = URL,
          `ARTICLE SOURCE` = source,
          `AGENCIES INVOLVED` = gov_agency,
          `ARTICLE DESCRIPTION` = description_original) %>%
-  #ensure date of publication is formatted as a date
   mutate(`FULL DATE` = as.Date(`FULL DATE`),
-         #agencies involved and coders are blank at this stage
          CODERS = NA,
-         #mark each of these columns as 0 that coders can change to one when present
          `AOS PRESENCE` = NA,                             
          `Agency Appointments` = 0,                      
          `Rules/Regulations/Orders` = 0,                 
@@ -92,7 +72,7 @@ human_coding_spreadsheet <- the_data_to_code %>%
          Completed = 0)
 
 
-#Bring in existing human coding spreadsheet
+#Bring in existing human coding spreadsheet so that coded articles are not overwritten
 aos_dataframe <- read_excel("C:/AOS_db/data/11_coding_spreadsheet.xlsx") %>%
   mutate(`FULL DATE` = as.Date(`FULL DATE`, format = "%m/%d/%Y"))
 
@@ -100,8 +80,6 @@ aos_dataframe <- read_excel("C:/AOS_db/data/11_coding_spreadsheet.xlsx") %>%
 write_csv(aos_dataframe, paste0("C:/AOS_db/data/11_coding_spreadsheet_", Sys.Date(), ".xlsx"))
 
 human_coding_spreadsheet <- bind_rows(aos_dataframe, human_coding_spreadsheet)
-
-##Remove duplicates if they show up
 
 human_coding_spreadsheet <- human_coding_spreadsheet %>%
   mutate(HEADLINE = str_remove_all(HEADLINE, "- AP News"),
@@ -115,13 +93,9 @@ human_coding_spreadsheet <- human_coding_spreadsheet %>%
   slice_max(order_by = str_count(HEADLINE, "[A-Z]")) %>%
   ungroup()
   
-### Write Data for Humans to Code ###
-#create new dataset with formatted spreadsheet
-# Create a new workbook and add a sheet
 wb <- createWorkbook()
 addWorksheet(wb, "coding")
 
-# Write data to the sheet
 writeData(wb, "coding", human_coding_spreadsheet)
 
 saveWorkbook(wb, "C:/AOS_db/data/11_coding_spreadsheet.xlsx", overwrite = TRUE)

@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
 #### Pulls the most recent 3 days of RSS feed articles and
-### makes groups of articles with XX matching words from the past 3 days to determine what articles are discussing similar attacks
+### makes groups of articles with 3 matching words from the past 3 days in the title and/or descriptions to determine what articles are describing similar attacks
 #### Runs weekly
 
 if (!require("pacman")) {
@@ -25,7 +25,7 @@ aoses_clean <- aoses_clean %>%
   mutate(pub_date = as.Date(pub_date)) %>%
   filter(pub_date >= "2025-12-19")
 
-#Filter duplicates to articles with highest character url_text, or read in articles
+#Filter multiples of articles to those with the highest character url_text, these are the most completely read in
 aoses_clean <- aoses_clean %>%
   mutate(num_chars = nchar(url_text)) %>%
   group_by(pub_date, title, source) %>%
@@ -138,7 +138,5 @@ aoses_clean_agg_final <- aoses_clean_agg_final %>%
   ungroup() %>%
   select(title, description, pub_date, URL, source, description_original, url_text, url_text_original, gov_agency, SI_mention, GSS_mention) %>%
   unique()
-
-### Get Data Ready for Next Script ###
 
 write_csv(aoses_clean_agg_final, "C:/AOS_db/data/10_aoses_clean_aggregate_aos.csv")

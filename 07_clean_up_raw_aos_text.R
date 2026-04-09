@@ -53,6 +53,4 @@ aoses_clean <- aoses_raw %>%
          url_text = str_remove_all(url_text, ". .             . ."))
 
 
-### Get Data Ready for Next R Script (07) ###
-
 write_csv(aoses_clean, "C:/AOS_db/data/07_aos_clean.csv")

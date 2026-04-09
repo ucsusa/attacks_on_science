@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
 #### Grabs RSS feeds from our targeted news sources daily and creates a table.
-#### Runs 1X/DAY
+#### Runs 1x/day
 
 if (!require("pacman")) {
   install.packages("pacman")
@@ -28,7 +28,7 @@ nbc_feed <- tidyfeed("https://feeds.nbcnews.com/nbcnews/public/news") %>%
   select(title:source) 
 
 
-#Pulling daily National Public Radio RSS Feed and cleaning it up
+#Pulling daily National Public Radio (NPR) RSS Feed and cleaning it up
 npr_feed <- tidyfeed("https://feeds.npr.org/1003/rss.xml") %>% 
   mutate(title = item_title, 
          description = item_description, 
@@ -67,6 +67,7 @@ the_hill_feed <- tidyfeed("https://thehill.com/homenews/feed/")  %>%
          source = "The Hill") %>%
   select(title:source)
 
+
 #Pulling daily Gov Exec RSS Feed from Google News, including the full text, and cleaning it up
 govexec_feed <- GET("https://www.govexec.com/rss/all/", verbose())
 
@@ -85,7 +86,6 @@ for(i in 1:length(descriptions)) {
   descriptions_text <- paste(html_body, collapse = " ")
   all_descriptions_text <- c(all_descriptions_text, descriptions_text)
 }
-
 
 pub_dates <- xml_text(xml_find_all(items, "pubDate"))
 
@@ -107,7 +107,6 @@ titles <- xml_text(xml_find_all(items, "title"))
 
 descriptions <- xml_text(xml_find_all(items, "content:encoded"), trim = TRUE)
 
-
 all_descriptions_text <- vector()
 
 for(i in 1:length(descriptions)) {
@@ -128,6 +127,7 @@ stateline_feed_df <- data.frame(title = titles, description = all_descriptions_t
 stateline_demo_feed <- stateline_feed_df %>%
   mutate(pub_date = as.Date(pub_date, format = "%a, %d %b %Y %H:%M:%S"))
 
+
 #Pulling daily Stat News RSS Feed and cleaning it up
 statnews_demo_feed <- tidyfeed("https://www.statnews.com/feed/") %>% 
   mutate(title = item_title, 
@@ -138,7 +138,7 @@ statnews_demo_feed <- tidyfeed("https://www.statnews.com/feed/") %>%
   select(title:source) 
 
 
-### Getting Data Ready for Next Script in Sequence (02) ###
+### Getting Data Ready for Next Script in Sequence ###
 
 
 all_feed <- bind_rows(nbc_feed, 
@@ -151,6 +151,7 @@ all_feed <- bind_rows(nbc_feed,
                       statnews_demo_feed) %>%
   unique()
 
+#Only including items from the previous day
 todays_feed <- all_feed %>%
   filter(pub_date > (Sys.Date() - 1))
 
