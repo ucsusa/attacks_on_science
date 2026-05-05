@@ -17,7 +17,7 @@ gc()
 
 
 ### Identify and read the text in the saved pdfs into the data frame so that the fully read articles can then be screened using the search terms categories: government, science, negative verbs, and topics. The article text must have at least one word from each of these categories of search terms.
-### Titles require adequate cleaning (no punctuation, no capitals, no extra spaces, no source names in them) in order to join with saved pdf articles and other dfs.
+### Titles require adequate cleaning (no punctuation, no capitals, no extra spaces, no source names in them) in order to join with the pdf file names.
 
 screened_articles <- read_csv("C:/AOS_db/data/02_rss_feed_screened_dfs.csv") %>%
   mutate(clean_title = tolower(title),
@@ -113,9 +113,10 @@ setwd("C:/AOS_db/pdf_articles")
 ticker <- 0
 
 for(i in 1:nrow(screened_articles_w_pdf)){ 
-  checking_4_read_split <- screened_articles_w_pdf %>%
+      checking_4_read_split <- screened_articles_w_pdf %>%
     slice(i)
-  pdf_to_read <- paste0("C:/AOS_db/pdf_articles/",checking_4_read_split$article_names)
+  if(nrow(checking_4_read_split) > 0){
+    pdf_to_read <- paste0("C:/AOS_db/pdf_articles/",checking_4_read_split$article_names)
     url_text_read <-  pdftools::pdf_text(pdf_to_read)
     url_text_read <- as.character(url_text_read) %>% 
       paste(., collapse = ". ") %>% 
@@ -131,7 +132,7 @@ for(i in 1:nrow(screened_articles_w_pdf)){
     ticker <- ticker + 1
     print(ticker)
     Sys.sleep(5)
-    }
+  }}
 
 
 ### Use Search Terms as a filter to capture articles that are more likely to describe attacks on science ###
@@ -149,7 +150,7 @@ screened_rss_feed_db_text <- bind_rows(completed_saved_articles,
 
 screened_rss_feed_db_text <- screened_rss_feed_db_text %>%
   mutate(num_chars = nchar(url_text)) %>%
-  group_by(pub_date, title, source) %>%
+  group_by(pub_date, source) %>%
   slice_max(num_chars, n = 1, with_ties = FALSE) %>%
   ungroup() %>%
   select(title, description, pub_date, URL, source, description_original, url_text, clean_title) %>%
@@ -231,7 +232,8 @@ aos_raw <- aos_raw %>%
   ungroup() %>%
   group_by(title, description, source) %>%
   slice_max(order_by = nchar(url_text), with_ties = FALSE) %>%
-  ungroup()
+  ungroup() %>%
+  distinct()
 
 write_csv(aos_raw, "C:/AOS_db/data/06_aos_raw.csv")
 

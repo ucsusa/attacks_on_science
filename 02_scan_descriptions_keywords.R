@@ -114,9 +114,6 @@ todays_feed_final <- filter(todays_feed,
                             description_search %in% topic_terms_db_text)
 
 
-### Getting Data Ready for Next Script in Sequence ###
-
-
 #Reading in past articles from RSS feeds that have already been screened for key words
 existing_feed <- read_csv("C:/AOS_db/data/02_rss_feed_screened_dfs.csv") %>%
   filter(source != "Gov Info")
@@ -124,7 +121,7 @@ existing_feed <- read_csv("C:/AOS_db/data/02_rss_feed_screened_dfs.csv") %>%
 all_feed_final <- bind_rows(todays_feed_final, existing_feed) %>% 
   unique() 
 
-#Eliminating duplicate articles, videos, and opinion articles
+#Eliminating duplicate articles, videos, and opinion articles. Remove articles before 1/20/25. Stateline keeps its rss feed back to 2024
 all_feed_final_no_dupes <- all_feed_final %>%
   select(-description_search) %>%
   mutate(description = gsub("[[:punct:]]", "", description),
@@ -145,6 +142,8 @@ all_feed_final_no_dupes <- all_feed_final %>%
   filter(URL != "https://www.washingtonpost.com",
          !grepl("opinion", URL),
          !grepl("opinion:", title),
-         !grepl("today.com/video", URL))
+         !grepl("Opinion:", title_original),
+         !grepl("today.com/video", URL),
+         pub_date > "2025-01-19")
 
 write_csv(all_feed_final_no_dupes, "C:/AOS_db/data/02_rss_feed_screened_dfs.csv")

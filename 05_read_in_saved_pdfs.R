@@ -106,7 +106,8 @@ human_coded_clean_titles <- unique(human_coding_spreadsheet$clean_title)
 
 screened_articles_no_pdf <- screened_articles_no_pdf %>%
   filter(!tolower(title_original) %in% human_coded_titles,
-         !clean_title %in% human_coded_clean_titles)
+         !clean_title %in% human_coded_clean_titles,
+         !source %in% c("Washington Post", "New York Times", "Gov Info"))
 
 write_csv(screened_articles_no_pdf, "C:/AOS_db/testing_the_script/results/05_screened_feed_to_read_not_scraped.csv")
 

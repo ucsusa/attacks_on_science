@@ -16,6 +16,16 @@ aoses_coded <- human_coding_spreadsheet %>%
   filter(`AOS PRESENCE` == 1)
 
 aoses_citations <- aoses_coded %>%
-  select(agg_objectid, `FULL DATE`, HEADLINE, LINK, `ARTICLE SOURCE`, `AOS PRESENCE`)
+  select(agg_objectid, `FULL DATE`, HEADLINE, LINK, `ARTICLE SOURCE`)
 
+##Add in citations from fully human coded data
+human_coding <- read_csv("C:/AOS_db/updating_formatting_human_coding_results/results/12_attack_title_summary.csv") %>%
+  reframe(agg_objectid, 
+          `FULL DATE` = full_date, 
+          HEADLINE = headline, 
+          LINK = link, 
+          `ARTICLE SOURCE` = article_source)
+
+aoses_citations <- bind_rows(aoses_citations, human_coding)
+          
 write_csv(aoses_citations, "C:/AOS_db/data/13_aos_citations.csv")

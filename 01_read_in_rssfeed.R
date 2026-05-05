@@ -49,13 +49,41 @@ ap_feed <- tidyfeed("https://news.google.com/rss/search?q=when:24h+allinurl:apne
 
 
 #Pulling daily E&E News RSS Feed and cleaning it up
-e_and_e_news_feed <- tidyfeed("https://rss.politico.com/eenews-eed") %>% 
+e_and_e_news_feed_1 <- tidyfeed("https://rss.politico.com/eenews-eed") %>% 
   mutate(title = item_title, 
          description = item_description, 
          pub_date = item_pub_date, 
          URL = item_link, 
          source = "E&E News") %>% 
   select(title:source) 
+
+e_and_e_news_feed_2 <- tidyfeed("https://rss.politico.com/energy.xml") %>% 
+  mutate(title = item_title, 
+         description = item_description, 
+         pub_date = item_pub_date, 
+         URL = item_link, 
+         source = "E&E News") %>% 
+  select(title:source) 
+
+e_and_e_news_feed_3 <- tidyfeed("https://rss.politico.com/healthcare.xml") %>% 
+  mutate(title = item_title, 
+         description = item_description, 
+         pub_date = item_pub_date, 
+         URL = item_link, 
+         source = "E&E News") %>% 
+  select(title:source) 
+
+e_and_e_news_feed_4 <- tidyfeed("https://www.eenews.net/articles/feed/") %>% 
+  mutate(title = item_title, 
+         description = item_description, 
+         pub_date = item_pub_date, 
+         URL = item_link, 
+         source = "E&E News") %>% 
+  select(title:source) 
+
+
+e_and_e_news_feed <- bind_rows(e_and_e_news_feed_1, e_and_e_news_feed_2, e_and_e_news_feed_3, e_and_e_news_feed_4) %>%
+  distinct()
 
 
 #Pulling daily The Hill RSS Feed and cleaning it up

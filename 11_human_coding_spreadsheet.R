@@ -28,10 +28,12 @@ the_data_to_code <- the_data_to_code %>%
 #Add in the articles that were never read in by scraping or automated pdf save
 articles_to_scrape <- read_csv("C:/AOS_db/data/04_screened_feed_to_read.csv")
 articles_read_in <- read_csv("C:/AOS_db/data/06_screened_read_articles_complete.csv")
+
 articles_never_scraped <- articles_to_scrape %>%
   filter(!clean_title %in% unique(articles_read_in$clean_title)) %>%
   mutate(url_text = description_original,
-         title = title_original) %>%
+         title = title_original,
+         pub_date = as.Date(pub_date)) %>%
   select(title, description, pub_date, URL, source, url_text)
 
 the_data_to_code <- bind_rows(the_data_to_code, articles_never_scraped)
@@ -77,12 +79,16 @@ aos_dataframe <- read_excel("C:/AOS_db/data/11_coding_spreadsheet.xlsx") %>%
   mutate(`FULL DATE` = as.Date(`FULL DATE`, format = "%m/%d/%Y"))
 
 #Save a copy of the existing human coding spreadsheet until the process is more stable.
-write_csv(aos_dataframe, paste0("C:/AOS_db/data/11_coding_spreadsheet_", Sys.Date(), ".xlsx"))
+#write_csv(aos_dataframe, paste0("C:/AOS_db/data/11_coding_spreadsheet_", Sys.Date(), ".csv"))
 
 human_coding_spreadsheet <- bind_rows(aos_dataframe, human_coding_spreadsheet)
 
+##Also removing Stateline articles from before 1/20/2025
+##And truncating character count in url_text to 32767 which is the character limit in an Excel cell.
 human_coding_spreadsheet <- human_coding_spreadsheet %>%
   mutate(HEADLINE = str_remove_all(HEADLINE, "- AP News"),
+         HEADLINE = str_remove_all(HEADLINE, "STAT+"),
+         HEADLINE = str_remove_all(HEADLINE, "\\+:"),
          HEADLINE = str_trim(HEADLINE, side = "both")) %>%
   group_by(`FULL DATE`, tolower(HEADLINE), LINK, `ARTICLE SOURCE`) %>%
   slice_max(., order_by = `AOS PRESENCE`, with_ties = FALSE) %>%
@@ -90,8 +96,12 @@ human_coding_spreadsheet <- human_coding_spreadsheet %>%
   select(HEADLINE, `FULL DATE`, LINK, `ARTICLE SOURCE`, SI_mention, GSS_mention, `AGENCIES INVOLVED`, CODERS, `ARTICLE DESCRIPTION`, everything()) %>%
   select(-`tolower(HEADLINE)`) %>%
   group_by(`FULL DATE`, `LINK`) %>%
-  slice_max(order_by = str_count(HEADLINE, "[A-Z]")) %>%
-  ungroup()
+  slice_max(., order_by = `AOS PRESENCE`, with_ties = FALSE) %>%
+  slice_max(order_by = str_count(`ARTICLE DESCRIPTION`, "[A-Z]")) %>%
+  ungroup() %>%
+  filter(`FULL DATE` > "2025-01-19") %>%
+  mutate(`ARTICLE DESCRIPTION` = str_trunc(`ARTICLE DESCRIPTION`, 32000, side = "right")) %>%
+  distinct()
   
 wb <- createWorkbook()
 addWorksheet(wb, "coding")

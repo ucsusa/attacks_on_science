@@ -124,54 +124,66 @@ screened_feed_to_read <- screened_feed_to_read %>%
          !source %in% c("Washington Post", "New York Times")) %>%
   arrange(sample(n()))
 
-write_csv(screened_feed_to_read, "C:/AOS_db/data/04_screened_feed_to_read.csv")
+#write_csv(screened_feed_to_read, "C:/AOS_db/data/04_screened_feed_to_read.csv")
 
 already_read_urls <- unread_screened_feed %>%
   filter(!title %in% screened_feed_to_read$title)
 
-#Read in full articles from E&E News
-grab_text1 <- function(url_test) {
-  try({login_url_test <- paste0("https://login.politicopro.com/?redirect=", url_test, "&s=eenews")
-  b <- read_html_live(login_url_test)
-  Sys.sleep(4)
-  b$session$Network$setUserAgentOverride(userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
-  Sys.sleep(4)
-  b$type("#email", key_list(service = "eandenews")$username)
-  Sys.sleep(4)
-  b$type("#password", key_get(service = "eandenews", key_list(service = "eandenews")$username))
-  b$click("#pro > div > div > div.page__form > div > form > fieldset > div.form-section.button")
-  Sys.sleep(4)
-  with_user_agent <- b$session$Runtime$evaluate("document.querySelector('html').outerHTML")$result$value
-  Sys.sleep(4)
-  url_test <- read_html(with_user_agent) %>%
-    html_nodes("p") %>% #select specific website html code labeled as "p"
-    html_text() %>% 
-    as.character() %>% 
-    paste(., collapse = ". ") 
-  b$session$close(wait = FALSE) 
-  url_test
-})
-  b <- ChromoteSession$new() 
-  Sys.sleep(4) 
-  b$Network$setUserAgentOverride(userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
-  Sys.sleep(4)
-  b$Page$navigate(url_test)
-  Sys.sleep(4)
-  with_user_agent <- b$Runtime$evaluate("document.querySelector('html').outerHTML")$result$value
-  Sys.sleep(4)
-  url_test <- read_html(with_user_agent) %>%
-    html_nodes("p") %>% 
-    html_text() %>% 
-    as.character() %>% 
-    paste(., collapse = ". ") 
-  b$close(wait = FALSE) 
-  url_test 
-}
 
-##Read STAT+ articles
-grab_text2 <- function(url_test) {
-  try({stat_login <- "https://www.statnews.com/login/"
-    b <- read_html_live(stat_login)
+##Read in the articles based on the structure of the news source. This section used to operate using individual functions that were implemented with a map function from the purrr package, but the functions started failing (week of 4/5) and I could not replicate the error. For now, each news source is read in a loop in the script below.
+
+screened_rss_feed_db_all <- data.frame()
+
+ticker <- 0
+
+for(i in 1:nrow(screened_feed_to_read)){ 
+  screened_rss_feed_db_split <- slice(screened_feed_to_read, i) 
+  if (screened_rss_feed_db_split$source == "E&E News") {
+    
+    url_test <- screened_rss_feed_db_split$URL
+    try({login_url_test <- paste0("https://login.politicopro.com/?redirect=", url_test, "&s=eenews")
+    b <- read_html_live(login_url_test)
+    Sys.sleep(4)
+    b$session$Network$setUserAgentOverride(userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
+    Sys.sleep(4)
+    b$type("#email", key_list(service = "eandenews")$username)
+    Sys.sleep(4)
+    b$type("#password", key_get(service = "eandenews", key_list(service = "eandenews")$username))
+    b$click("#pro > div > div > div.page__form > div > form > fieldset > div.form-section.button")
+    Sys.sleep(4)
+    with_user_agent <- b$session$Runtime$evaluate("document.querySelector('html').outerHTML")$result$value
+    Sys.sleep(4)
+    url_test <- read_html(with_user_agent) %>%
+      html_nodes("p") %>% #select specific website html code labeled as "p"
+      html_text() %>% 
+      as.character() %>% 
+      paste(., collapse = ". ") 
+    b$session$close(wait = FALSE) 
+    screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = url_test)
+    })
+    url_test <- screened_rss_feed_db_split$URL
+    url_test <- paste0("https://login.politicopro.com/?redirect=", url_test, "&s=eenews")
+    b <- ChromoteSession$new() 
+    Sys.sleep(4) 
+    b$Network$setUserAgentOverride(userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
+    Sys.sleep(4)
+    b$Page$navigate(url_test)
+    Sys.sleep(4)
+    with_user_agent <- b$Runtime$evaluate("document.querySelector('html').outerHTML")$result$value
+    Sys.sleep(4)
+    url_test <- read_html(with_user_agent) %>%
+      html_nodes("p") %>% 
+      html_text() %>% 
+      as.character() %>% 
+      paste(., collapse = ". ") 
+    b$close(wait = FALSE) 
+    screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = url_test)
+    Sys.sleep(10)} 
+  else if(screened_rss_feed_db_split$source == "Stat News") {
+    url_test <- screened_rss_feed_db_split$URL
+    try({stat_login <- "https://www.statnews.com/login/"
+  
+  b <- read_html_live(stat_login)
   Sys.sleep(4)
   b$session$Network$setUserAgentOverride(userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
   Sys.sleep(4)
@@ -182,94 +194,77 @@ grab_text2 <- function(url_test) {
   Sys.sleep(4)
   
   b$session$close(wait = FALSE)
+  screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = url_test)
   })
-  b <- ChromoteSession$new() 
-  Sys.sleep(4)  
-  b$Network$setUserAgentOverride(userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
-  Sys.sleep(4)
-  b$Page$navigate(url_test)
-  Sys.sleep(4)
-  with_user_agent <- b$Runtime$evaluate("document.querySelector('html').outerHTML")$result$value
-  Sys.sleep(4)
-  url_test <- read_html(with_user_agent) %>%
-    html_nodes("p") %>% 
-    html_text() %>% 
-    as.character() %>% 
-    paste(., collapse = ". ") 
-  b$close(wait = FALSE) 
-  url_test 
-  }
-
-#Scrape The Hill articles
-grab_text3 <- function(url_test) {
-  resp <- request(url_test) %>% 
-    req_user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36") %>%
-    req_perform()
-  Sys.sleep(4)
-  html <- resp %>% resp_body_html()
-  Sys.sleep(4)
-  url_test <- html %>% 
-    html_elements("p") %>% 
-    html_text() %>%
-    as.character() %>%
-    paste(., collapse = ". ")
-  url_test
-  Sys.sleep(10)
-}
-
-#Read in articles from all other sources.
-grab_text4 <- function(url_test) {
-  b <- ChromoteSession$new()
-  Sys.sleep(4)
-  b$Network$setUserAgentOverride(userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
-  Sys.sleep(4)
-  b$Page$navigate(url_test)
-  Sys.sleep(4)
-  with_user_agent <- b$Runtime$evaluate("document.querySelector('html').outerHTML")$result$value
-  Sys.sleep(4)
-  url_test <- read_html(with_user_agent) %>% 
-    html_node("body") %>%
-    html_elements("p") %>%
-    html_text() %>%
-    as.character() %>%
-    paste(., collapse = ". ")
-  b$close(wait = FALSE)
-  url_test
-}
-
-
-screened_rss_feed_db_all <- data.frame()
-
-ticker <- 0
-
-for(i in 1:nrow(screened_feed_to_read)){ 
-  screened_rss_feed_db_split <- slice(screened_feed_to_read, i) 
-  if (screened_rss_feed_db_split$source == "E&E News") {
-    screened_rss_feed_db_split <- mutate(
-      screened_rss_feed_db_split,                                         url_text = map(URL, possibly(grab_text1)))
-  } else if(screened_rss_feed_db_split$source == "Stat News") {screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = map(URL, possibly(grab_text2)))
-  } else if (screened_rss_feed_db_split$source == "The Hill"){screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = map(URL, possibly(grab_text4)))} else{screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = map(URL, possibly(grab_text4)))}
+    b <- ChromoteSession$new() 
+    Sys.sleep(4)  
+    b$Network$setUserAgentOverride(userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
+    Sys.sleep(4)
+    b$Page$navigate(url_test)
+    Sys.sleep(4)
+    with_user_agent <- b$Runtime$evaluate("document.querySelector('html').outerHTML")$result$value
+    Sys.sleep(4)
+    url_test <- read_html(with_user_agent) %>%
+      html_nodes("p") %>% 
+      html_text() %>% 
+      as.character() %>% 
+      paste(., collapse = ". ") 
+    b$close(wait = FALSE) 
+    Sys.sleep(10)
+ 
+    screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = url_test)} else if(screened_rss_feed_db_split$source == "The Hill"){
+  resp <- request(screened_rss_feed_db_split$URL) %>% 
+      req_user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36") %>%
+      req_perform()
+    Sys.sleep(10)
+    html <- resp %>% resp_body_html()
+    Sys.sleep(10)
+    url_test <- html %>% 
+      html_elements("p") %>% 
+      html_text2() %>%
+      as.character() %>%
+      paste(., collapse = ". ")
+    screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = url_test)
+    Sys.sleep(10)
+  } else{
+    url_test <- screened_rss_feed_db_split$URL
+    b <- ChromoteSession$new()
+    Sys.sleep(4)
+    b$Network$setUserAgentOverride(userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
+    Sys.sleep(4)
+    b$Page$navigate(url_test)
+    Sys.sleep(4)
+    with_user_agent <- b$Runtime$evaluate("document.querySelector('html').outerHTML")$result$value
+    Sys.sleep(4)
+    url_test <- read_html(with_user_agent) %>% 
+      html_node("body") %>%
+      html_elements("p") %>%
+      html_text() %>%
+      as.character() %>%
+      paste(., collapse = ". ")
+    b$close(wait = FALSE)
+    Sys.sleep(10)
+    screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = url_test)}
   
   screened_rss_feed_db_all <- bind_rows(screened_rss_feed_db_split, screened_rss_feed_db_all)
   
   ticker <- ticker + 1
   print(ticker)
-  Sys.sleep(1)
+  Sys.sleep(10)
 }
 
-#screened_rss_feed_db_split, url_text = map(URL, possibly(grab_text3)))
 
 screened_rss_feed_db_text <- screened_rss_feed_db_all %>%
   rowwise() %>%
-  mutate(url_text = unlist(paste(as.character(url_text), collapse = ". ")),
-         url_text = ifelse(is.na(url_text), description_original, url_text),
+  mutate(url_text = ifelse(is.na(url_text), description_original, url_text),
          url_text = ifelse(is.null(url_text), description_original, url_text))
 
-screened_rss_feed_db_text <- bind_rows(already_read_urls, screened_rss_feed_db_text) %>% 
+screened_rss_feed_db_text <- bind_rows(scraped_articles, screened_rss_feed_db_text) %>% 
+  mutate(nchar_url = nchar(url_text)) %>%
   group_by(title, URL, source) %>%
-  slice_max(., order_by = desc(pub_date), n = 1, with_ties = FALSE) %>%
+  slice_max(., order_by = desc(nchar_url), n = 1, with_ties = FALSE) %>%
   group_by(description, URL, source) %>%
-  slice_max(., order_by = desc(pub_date), n = 1, with_ties = FALSE) %>%
+  slice_max(., order_by = desc(nchar_url), n = 1, with_ties = FALSE) %>%
   ungroup() %>%
   unique() %>%
   filter(source != "Gov Info",
@@ -280,3 +275,4 @@ screened_rss_feed_db_text <- bind_rows(screened_rss_feed_db_text, govex_sl) %>%
   distinct()
 
 write_csv(screened_rss_feed_db_text, "C:/AOS_db/data/04_rss_feed_screened_read_articles_dfs.csv")
+
