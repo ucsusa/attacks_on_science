@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
-####This script creates a workbook with a readme from the combined human coded and the rss feed data sets.
-####Runs weekly
+#### Creates a workbook with a readme from the combined data from human-driven and automated data collection for Attacks on Science Tracker.
+#### Runs 1x/week
 
 if (!require("pacman")) {
   install.packages("pacman")

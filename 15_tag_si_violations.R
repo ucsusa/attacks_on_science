@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
-####Identifies if there is a possible scientific integrity violation described in the attack, using the types of attacks on science identified in the full article review.
-####Runs weekly
+#### Identifies potential scientific integrity violations based on attacks on science types identified by human coders.
+#### Runs 1x/week
 
 if (!require("pacman")) {
   install.packages("pacman")

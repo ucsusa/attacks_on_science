@@ -1,5 +1,5 @@
 #### R SCRIPT PURPOSE: 
-#### Grabs RSS feeds from our targeted news sources daily and creates a table.
+#### Grabs RSS feeds from our targeted news sources daily and puts into a table.
 #### Runs 1x/day
 
 if (!require("pacman")) {
@@ -39,7 +39,8 @@ npr_feed <- tidyfeed("https://feeds.npr.org/1003/rss.xml") %>%
 
 
 #Pulling daily AP RSS Feed from Google News and cleaning it up
-ap_feed <- tidyfeed("https://news.google.com/rss/search?q=when:24h+allinurl:apnews.com&hl=en-US&gl=US&ceid=US:en") %>% 
+
+ap_feed <- tidyfeed("https://rss.app/feeds/6t9bqguHo638jpxk.xml") %>% 
   mutate(title = item_title, 
          description = item_description, 
          pub_date = item_pub_date, 
@@ -49,7 +50,7 @@ ap_feed <- tidyfeed("https://news.google.com/rss/search?q=when:24h+allinurl:apne
 
 
 #Pulling daily E&E News RSS Feed and cleaning it up
-e_and_e_news_feed_1 <- tidyfeed("https://rss.politico.com/eenews-eed") %>% 
+e_and_e_news_feed_1 <- tidyfeed("https://rss.politico.com/eenews-eed") %>%
   mutate(title = item_title, 
          description = item_description, 
          pub_date = item_pub_date, 
@@ -57,7 +58,7 @@ e_and_e_news_feed_1 <- tidyfeed("https://rss.politico.com/eenews-eed") %>%
          source = "E&E News") %>% 
   select(title:source) 
 
-e_and_e_news_feed_2 <- tidyfeed("https://rss.politico.com/energy.xml") %>% 
+e_and_e_news_feed_2 <- tidyfeed("https://rss.politico.com/energy.xml") %>%
   mutate(title = item_title, 
          description = item_description, 
          pub_date = item_pub_date, 

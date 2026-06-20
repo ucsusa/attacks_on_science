@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
-####This script flags articles that are coded in the same way and occur within +/- 2 days of eachother
-###Runs on weekly on Mondays
+#### Runs a second duplicate check: flags articles coded in the same way and occur within +/- 2 days.
+#### Runs 1x/week
 
 if (!require("pacman")) {
   install.packages("pacman")
@@ -41,7 +41,7 @@ all_the_data_no_agg  <- all_the_data_groups %>%
   filter(group_count == 1)
   
 
-##Check if the groups overlap in newscycle
+#Check if the groups overlap in news cycle
 filtered_groups <- unique(all_the_data_agg$group_id)
 
 grouped_aoses_all <- data.frame()
@@ -61,7 +61,7 @@ for(i in filtered_groups){
           grouped_aoses_all <- bind_rows(grouped_aoses_all, all_the_data_fil) %>% distinct()
         }}}}}
 
-##Add the groups not in the same newscycle back into the non-group dataframe.
+#Add the groups not in the same news cycle back into the non-grouped data frame
 ungrouped_aoses_all <- all_the_data_agg %>%
   filter(!link %in% grouped_aoses_all$link)
 
@@ -134,7 +134,9 @@ all_combos_groups <- all_combos_groups %>%
 
 
 
-##Where there are multiples, pull the article to go into the database using the source prioritization. The New York Times and the Washington Post are legacy sources and no longer used. If the sources are the same, choose the chronologically first article.
+#Where there are multiples, pull the article to go into the database using the source prioritization list
+#The New York Times and the Washington Post are legacy sources and are no longer used
+#If the sources are the same, choose the chronologically first article
 
 priority_sources <- c("The Hill", "Associated Press", "Stat News", "E&E News", "Stateline Democracy", "Gov Exec", "National Broadcasting Corporation", "National Public Radio", "New York Times", "Washington Post")
 
@@ -147,7 +149,7 @@ aoses_clean_agg_final <- all_combos_groups %>%
   slice_min(order_by = full_date) %>%
   ungroup()
 
-##Pull in already-tested articles
+#Pull in already-tested articles
 aoses_clean_agg_final <- bind_rows(aoses_clean_agg_final, all_the_data_no_agg) %>%
   distinct() %>%
   mutate(article_source = factor(article_source, levels = priority_sources)) %>%

@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
-#### Saves pdf versions of unread or misread articles
-#### Runs weekly
+#### Saves pdfs of full article text of unread or misread articles from previous script.
+#### 1x/week
 
 if (!require("pacman")) {
   install.packages("pacman")
@@ -14,14 +14,18 @@ p_load(tidyverse,
 
 gc()
 
-##Pull in all screened in articles
+
+### Reading In and Organizing Data from Previous Script ###
+
+
+#Pull in all screened in articles
 unread_screened_feed <- read_csv("C:/AOS_db/data/02_rss_feed_screened_dfs.csv")
 
-##Eliminate Gov Exec and Stateline from the automated search since rss descriptions are the full text.
+#Eliminate Gov Exec and Stateline from the automated search since rss descriptions are the full text.
 unread_screened_feed <- unread_screened_feed %>%
   filter(!source %in% c("Gov Exec", "Stateline Democracy"))
 
-##Remove any articles to be scraped if they already have pdfs saved in the pdf folder
+#Remove any articles to be scraped if they already have pdfs saved in the pdf folder
 pdf_folder <- list.files("C:/AOS_db/pdf_articles")
 
 already_read_pdfs_df <- data.frame(article_names = pdf_folder, stringsAsFactors = FALSE)
@@ -34,11 +38,12 @@ already_read_pdfs_titles <- already_read_pdfs_df %>%
          clean_title = tolower(clean_title),
          clean_title = str_trim(clean_title))
 
-##Remove pdfs with small file sizes, they are blank
+#Remove pdfs with small file sizes, they are blank
 setwd("C:/AOS_db/pdf_articles")
 
 already_read_pdfs_size <- data.frame(stringsAsFactors = FALSE)
 
+#cleaning up PDF files and names
 for(i in pdf_folder){
   info <- file.info(i)
   size_bytes <- info$size
@@ -68,7 +73,9 @@ unread_screened_feed_no_pdf <- unread_screened_feed %>%
   filter(!clean_title %in% already_read_pdfs_clean_titles,
          !title_original %in% already_read_pdfs_titles)
 
-##Eliminate from the list any articles that were already scraped in the 04 scripts. Filter out articles that weren't read in fully and are under 150 characters. There are some remaining filters for sources that we eliminated early on.
+#Eliminate from the list any articles that were already scraped in the 04 script.
+#Filter out articles that weren't read in fully and are under 150 characters. 
+#There are some remaining filters for sources that we eliminated early on.
 scraped_articles <- read_csv("C:/AOS_db/data/04_rss_feed_screened_read_articles_dfs.csv") %>%
   group_by(title_original, description, URL, source) %>%
   slice_max(., order_by = pub_date) %>%
@@ -92,7 +99,7 @@ already_scraped_articles <- unique(scraped_articles$clean_title)
 screened_articles_no_pdf <- unread_screened_feed_no_pdf %>%
   filter(!clean_title %in% already_scraped_articles)
 
-##Eliminate articles already screened out by human coding
+#Eliminate articles already screened out by human coding
 human_coding_spreadsheet <- read_excel("C:/AOS_db/data/11_coding_spreadsheet.xlsx") %>%
   mutate(clean_title = tolower(HEADLINE),
          clean_title = gsub("stat+|ap news|pdf|", "", clean_title),
@@ -117,6 +124,7 @@ sanitize_filename <- function(x) {
   str_replace_all(x, '[\\\\/:*?"<>|]', "_")
 }
 
+#Writing a function to download PDFs of articles not read or misread in script 04
 b <- ChromoteSession$new()
 
 save_pdf_2 <- function(x) {

@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
-#### Tags government agencies mentioned in article text
-#### Runs weekly
+#### Documents federal agencies mentioned in first 1/3 of article text.
+#### Runs 1x/week
 
 if (!require("pacman")) {
   install.packages("pacman")
@@ -13,21 +13,26 @@ p_load(tidyverse,
 
 clean_aos <- read_csv("C:/AOS_db/data/07_aos_clean.csv")
 
-#read in spreadsheet with government agencies
+#Read in spreadsheet with government agencies UCS tracks
 gov_agencies <- read_excel("C:/AOS_db/info_tables/Search Terms AOS.xlsx") %>%
   filter(category == "government") %>%
   mutate(search_term_lower = tolower(search_term))
 
-### Tagging government Agencies in the first third of the article text since this portion of articles includes most of the content, and the rest may include more context less directly related to the attack if present ###
+### Documenting Government Agencies ###  
 
+#Identify agencies in the first third of article text 
+#This portion of article text includes most of the content
+#(The rest may include more context less directly related to the attack if present)
 clean_aos_third  <- clean_aos %>%
   mutate(char_length = str_length(url_text), 
          third_length = ceiling(char_length/3) + 1, 
          use_text = str_sub(url_text, 1, third_length),
          use_text = tolower(use_text))
 
-##Search the truncated url_text for each of the government agencies and return the government agencies as a comma delimited list. Also removes agencies that appear in the article multiple times.
-
+#Writing a function to:
+#Search the truncated url_text for each of the government agencies,
+#return the government agencies as a comma delimited list, and
+#removes agencies that appear in the article multiple times
 aos_clean_agency <- data.frame()
 
 

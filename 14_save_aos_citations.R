@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
-#### Saves citations for each coded AOS
-####Runs weekly
+#### Saves meta data of each article that contain an attack on science, confirmed by human coders.
+#### Runs 1x/week
 
 if (!require("pacman")) {
   install.packages("pacman")

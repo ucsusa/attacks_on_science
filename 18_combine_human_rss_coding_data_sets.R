@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
-####This script combines and formats the human coded and the rss feed data sets.
-####Runs weekly
+#### Combines and formats the data from human-driven and automated data collection.
+#### Runs 1x/week
 
 if (!require("pacman")) {
   install.packages("pacman")
@@ -27,7 +27,7 @@ human_coding <- read_csv("C:/AOS_db/updating_formatting_human_coding_results/res
   rowwise() %>%
   select(agg_objectid, headline, full_date, link, article_source, agencies_involved_list, si_mention, gss_mention, potential_si_violation, attack_type_list, attack_topic_list, enacted_list, attack_summary, week_month_year)
 
-##Correct to 2/2026 potential SI violation definition, omitting resets or dismantling of science advisory committees
+#Correct to 2/2026 potential SI violation definition, omitting resets or dismantling of science advisory committees
 human_coding <- human_coding %>%
   mutate(potential_si_violation = ifelse(grepl("altering_study_results|data_accessibility|data_collection|censorship|restrictions_from_professional_engagement", attack_type_list), "yes", "no"))
 
@@ -43,7 +43,7 @@ all_the_data <- bind_rows(rss, human_coding) %>%
          agencies_involved = agencies_involved_list,
          attack_completion = enacted_list)
 
-##Add proper AP URL to the final spreadsheet
+#Add proper AP URL to the final spreadsheet
 all_the_data_no_ap <- all_the_data %>%
   filter(article_source != "Associated Press")
 

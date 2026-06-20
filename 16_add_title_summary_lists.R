@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
-####This script appends the appropriate definitions from the process document to the end of the url text for inclusion in generic summaries.
-####Runs weekly
+#### Creates attack summaries by pasting abbreviated definitions of attack on science variables into sentence structure.
+#### Runs 1x/week
 
 if (!require("pacman")) {
   install.packages("pacman")
@@ -12,7 +12,7 @@ p_load(tidyverse,
 
 human_coding_spreadsheet <- read_csv("C:/AOS_db/data/15_coding_spreadsheet_unique_id_si.csv")
 
-###Read in type, topic, and enacted descriptions
+#Read in type, topic, and completion stage variable abbreviated definitions
 process_descriptions <- read_csv("C:/AOS_db/info_tables/999_aos_type_topic_definitions.csv") %>%
   mutate(specific_category_name = gsub(" ", "_", tolower(specific_category_name)),
          specific_category_name = gsub("_&", "", tolower(specific_category_name)),
@@ -28,7 +28,7 @@ aoses_long <- human_coding_spreadsheet %>%
   filter(type_response == 1|topic_response != "0"|enacted_value == 1)
 
 
-## These functions set up the formatting for the lists that are used in the attack summaries for capital letters, oxford commas, title case.
+#These functions set up formatting for the lists used in the attack summaries for capital letters, oxford commas, title case.
 make_a_list <- function(x){
   if (length(unique(x)) == 0) {
     formatted_string <- ""
@@ -54,8 +54,7 @@ firstup <- function(x) {
 }
 
 
-##We reformat and join the types and topic descriptions in order to create lists of descriptions or types/topics when an attack on science has been coded for multiples of these.
-
+#We reformat and join the types and topic descriptions in order to create lists of descriptions or types/topics when an attack on science has been coded as multiples of these
 df_type <- aoses_long %>%
   filter(type_response == 1) %>%
   select(agg_objectid, headline, full_date, link, article_source, attack_type) %>%
@@ -127,7 +126,9 @@ aos_type_topic <- aos_type_topic %>%
   left_join(., aos_data_df) %>%
   unique()
 
-##We are not using the titles in the final dataset as they were too choppy.
+#We are not using the titles in the final data set as they were too choppy
+
+#Pasting abbreviated definitions into sentence structure
 aos_summaries <- aos_type_topic %>%
   mutate(attack_title = paste(agencies_involved_list, attack_attacks, "science with", attack_type_list, "negatively impacting", attack_topic_list),
          article_description = paste0(firstup(article_description), "."),

@@ -1,8 +1,8 @@
 #### R SCRIPT PURPOSE: 
-#### Pulls the text from RSS Feed articles whose descriptions contain key word(s) and reads in the full text.
-#### Runs weekly
+#### Compiles article RSS feeds that passed first AOS search term filter (in script 02) and collects article text via targeted URL scraping.
+#### Runs 1x/week
 
-#### The user must have Chrome installed since it opens a Chrome instance to read each article.
+#### NOTE: The user must have Chrome installed since it opens a Chrome instance to read each article.
 
 if (!require("pacman")) {
   install.packages("pacman")
@@ -24,15 +24,20 @@ p_load(tidyverse,
 gc()
 
 
+### Reading In and Organizing RSS Data from Previous Script ###
+
+
 unread_screened_feed <- read_csv("C:/AOS_db/data/02_rss_feed_screened_dfs.csv")
 
-##Create df of urls from Gov Exec and Stateline Democracy to add back in at the end since they already have full text in the rss feed.
+#Create separate df of urls from Gov Exec and Stateline Democracy
+#They already have full text in their RSS feeds
+#Will add these back in at the end
 govex_sl <- unread_screened_feed %>%
   filter(source %in% c("Gov Exec", "Stateline Democracy")) %>%
   mutate(url_text = description)
 
 
-##Remove any articles to be scraped if they already have pdfs saved in the pdf folder
+#Remove articles from URL scraping pile if they already have pdfs saved in the pdf folder
 pdf_folder <- list.files("C:/AOS_db/pdf_articles")
 
 already_read_pdfs_df <- data.frame(article_names = pdf_folder, stringsAsFactors = FALSE)
@@ -45,9 +50,10 @@ already_read_pdfs_titles <- already_read_pdfs_df %>%
          clean_title = tolower(clean_title),
          clean_title = str_trim(clean_title))
 
-##Remove pdfs with small file sizes, they are blank
+#Remove pdfs with small file sizes (they are blank)
 setwd("C:/AOS_db/pdf_articles")
 
+#Cleaning up PDF files and names
 already_read_pdfs_size <- data.frame(stringsAsFactors = FALSE)
 
 for(i in pdf_folder){
@@ -77,7 +83,9 @@ unread_screened_feed_no_pdf <- unread_screened_feed %>%
   filter(!clean_title %in% already_read_pdfs_clean_titles,
          !title_original %in% already_read_pdfs_titles)
 
-##Pull in and eliminate from the list any articles that were already scraped in previous 04 runs. Filter out articles that weren't read in fully (generally under 150 characters). There are some remaining filters for sources that we eliminated early on.
+#Pull in and eliminate from the list any articles that were already scraped in previous 04 runs,
+#Filter out articles that weren't read in fully (generally under 150 characters), and
+#Left over filters for sources that we eliminated early on
 scraped_articles <- read_csv("C:/AOS_db/data/04_rss_feed_screened_read_articles_dfs.csv") %>%
   group_by(title_original, description, URL, source) %>%
   slice_max(., order_by = pub_date) %>%
@@ -98,22 +106,20 @@ scraped_articles <- read_csv("C:/AOS_db/data/04_rss_feed_screened_read_articles_
 
 already_scraped_articles <- unique(scraped_articles$clean_title)
 
-
 screened_feed_to_read <- unread_screened_feed_no_pdf %>%
   filter(!clean_title %in% already_scraped_articles)
 
-##Eliminate Gov Exec and Stateline from the automated search since rss feeds have the full text included as the description.
+#Eliminate Gov Exec and Stateline from the automated search since rss feeds have the full text included as the description.
 screened_feed_to_read <- screened_feed_to_read %>%
   filter(!source %in% c("Gov Exec", "Stateline Democracy"))
 
-##Eliminate articles already screened out by human coding
+#Eliminate articles already screened out by human coding
 human_coding_spreadsheet <- read_excel("C:/AOS_db/data/11_coding_spreadsheet.xlsx") %>%
   mutate(clean_title = tolower(HEADLINE),
          clean_title = gsub("stat+|ap news|pdf|", "", clean_title),
          clean_title = gsub("[[:punct:]]", "", clean_title),
          clean_title = gsub("  ", " ", clean_title),
          clean_title = str_trim(clean_title))
-
 
 human_coded_titles <- unique(human_coding_spreadsheet$HEADLINE)
 human_coded_clean_titles <- unique(human_coding_spreadsheet$clean_title)
@@ -130,12 +136,18 @@ already_read_urls <- unread_screened_feed %>%
   filter(!title %in% screened_feed_to_read$title)
 
 
-##Read in the articles based on the structure of the news source. This section used to operate using individual functions that were implemented with a map function from the purrr package, but the functions started failing (week of 4/5) and I could not replicate the error. For now, each news source is read in a loop in the script below.
+### Targeted URL Scraping ###
+
+
+#The following code reads in the articles based on the structure of the news source
+#This section used to operate using individual functions that were implemented with a map function from the purrr package, but the functions started failing and I could not replicate the error 
+#For now, each news source is read in a loop in the script below
 
 screened_rss_feed_db_all <- data.frame()
 
 ticker <- 0
 
+#Writing and running a function for E&E News articles
 for(i in 1:nrow(screened_feed_to_read)){ 
   screened_rss_feed_db_split <- slice(screened_feed_to_read, i) 
   if (screened_rss_feed_db_split$source == "E&E News") {
@@ -182,7 +194,7 @@ for(i in 1:nrow(screened_feed_to_read)){
   else if(screened_rss_feed_db_split$source == "Stat News") {
     url_test <- screened_rss_feed_db_split$URL
     try({stat_login <- "https://www.statnews.com/login/"
-  
+    #Writing and running a function for Stat News articles
   b <- read_html_live(stat_login)
   Sys.sleep(4)
   b$session$Network$setUserAgentOverride(userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
@@ -192,7 +204,7 @@ for(i in 1:nrow(screened_feed_to_read)){
   b$type("#login-password", key_get(service = "statnews", key_list(service = "statnews")$username))
   b$click("#login > form:nth-child(2) > div:nth-child(3) > input")
   Sys.sleep(4)
-  
+  #Writing and running a function for other outlets' articles using html_text
   b$session$close(wait = FALSE)
   screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = url_test)
   })
@@ -211,7 +223,7 @@ for(i in 1:nrow(screened_feed_to_read)){
       paste(., collapse = ". ") 
     b$close(wait = FALSE) 
     Sys.sleep(10)
- 
+    #Writing and running a function for other outlets' articles using html_text2
     screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = url_test)} else if(screened_rss_feed_db_split$source == "The Hill"){
   resp <- request(screened_rss_feed_db_split$URL) %>% 
       req_user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36") %>%
@@ -237,7 +249,7 @@ for(i in 1:nrow(screened_feed_to_read)){
     with_user_agent <- b$Runtime$evaluate("document.querySelector('html').outerHTML")$result$value
     Sys.sleep(4)
     url_test <- read_html(with_user_agent) %>% 
-      html_node("body") %>%
+      html_node("body") %>% #Writing and running a function for other outlets' articles by targeting specific html nodes
       html_elements("p") %>%
       html_text() %>%
       as.character() %>%
@@ -253,7 +265,7 @@ for(i in 1:nrow(screened_feed_to_read)){
   Sys.sleep(10)
 }
 
-
+#If text wasn't successfully pulled, then replace with RSS feed descriptions
 screened_rss_feed_db_text <- screened_rss_feed_db_all %>%
   rowwise() %>%
   mutate(url_text = ifelse(is.na(url_text), description_original, url_text),
@@ -270,9 +282,13 @@ screened_rss_feed_db_text <- bind_rows(scraped_articles, screened_rss_feed_db_te
   filter(source != "Gov Info",
          URL != "https://washingtonpost.com")
 
-##Add stateline and gov exec back in
+#Add stateline and gov exec back in
 screened_rss_feed_db_text <- bind_rows(screened_rss_feed_db_text, govex_sl) %>%
   distinct()
+
+
+### Getting Data Ready for Next R Script ###
+
 
 write_csv(screened_rss_feed_db_text, "C:/AOS_db/data/04_rss_feed_screened_read_articles_dfs.csv")
 

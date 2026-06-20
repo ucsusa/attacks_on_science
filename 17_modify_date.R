@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
-####This script modifies the date to a week, month, and a year.
-####Runs weekly
+#### Modifies the date of reporting to a week, month, and a year.
+#### Runs 1x/week
 
 if (!require("pacman")) {
   install.packages("pacman")

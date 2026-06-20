@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
-#### Pulls in read URLs from both scraping and pdf saving and filters the full text articles for all of the search terms using the "AND" clause
-#### Runs weekly
+#### Screens full article text (from scraping and pdf saving) using second AOS search term criteria.
+#### Runs 1x/week
 
 if (!require("pacman")) {
   install.packages("pacman")
@@ -16,9 +16,10 @@ p_load(tidyverse,
 gc()
 
 
-### Identify and read the text in the saved pdfs into the data frame so that the fully read articles can then be screened using the search terms categories: government, science, negative verbs, and topics. The article text must have at least one word from each of these categories of search terms.
-### Titles require adequate cleaning (no punctuation, no capitals, no extra spaces, no source names in them) in order to join with the pdf file names.
+### Reading In and Organizing RSS and Full Article Text Data from Previous Scripts ###
 
+
+#Identify and read the text in the saved pdfs into the data frame so that the fully read articles can then be screened with second AOS search term filter
 screened_articles <- read_csv("C:/AOS_db/data/02_rss_feed_screened_dfs.csv") %>%
   mutate(clean_title = tolower(title),
          clean_title = gsub("[[:punct:]]", "", clean_title),
@@ -26,6 +27,7 @@ screened_articles <- read_csv("C:/AOS_db/data/02_rss_feed_screened_dfs.csv") %>%
          clean_title = gsub("stat+|.pdf|", "", clean_title),
          clean_title = str_trim(clean_title))
 
+#Titles require adequate cleaning (no punctuation, no capitals, no extra spaces, no source names in them) in order to join with the pdf file names
 scraped_articles <- read_csv("C:/AOS_db/data/04_rss_feed_screened_read_articles_dfs.csv") %>%
   mutate(clean_title = tolower(title),
          clean_title = gsub("[[:punct:]]", "", clean_title),
@@ -65,6 +67,8 @@ pdf_folder <- list.files("C:/AOS_db/pdf_articles")
 
 already_read_pdfs_df <- data.frame(article_names = pdf_folder, stringsAsFactors = FALSE)
 
+
+#cleaning up PDF files and names
 already_read_pdfs_titles <- already_read_pdfs_df %>%
   mutate(title = gsub("AP News|STAT+|.pdf", "", article_names),
          title = str_trim(title, side = "both"),
@@ -73,7 +77,7 @@ already_read_pdfs_titles <- already_read_pdfs_df %>%
          clean_title = tolower(clean_title),
          clean_title = str_trim(clean_title))
 
-##Remove pdfs with small file sizes, they are blank
+#Remove pdfs with small file sizes, they are blank
 setwd("C:/AOS_db/pdf_articles")
 
 already_read_pdfs_size <- data.frame(stringsAsFactors = FALSE)
@@ -105,7 +109,7 @@ screened_articles_w_pdf <- left_join(need_pdf, already_read_pdfs_titles_df, by =
   rename(title = title.y) %>%
   select(-title.x)
 
-##Join appropriate pdf from the folder, pull in text into the url_text column for articles not scraped properly.
+#Join matching pdf from the folder, pull in text into the url_text column for articles not scraped properly.
 checking_4_read_all <- data.frame(stringsAsFactors = FALSE)
 
 setwd("C:/AOS_db/pdf_articles")
@@ -135,7 +139,8 @@ for(i in 1:nrow(screened_articles_w_pdf)){
   }}
 
 
-### Use Search Terms as a filter to capture articles that are more likely to describe attacks on science ###
+### Apply Search Terms to Screen Articles for Potential Attacks on Science ###
+
 
 completed_saved_articles <- read_csv("C:/AOS_db/data/06_screened_read_articles_complete.csv")
 
@@ -158,15 +163,14 @@ screened_rss_feed_db_text <- screened_rss_feed_db_text %>%
 
 write_csv(screened_rss_feed_db_text, "C:/AOS_db/data/06_screened_read_articles_complete.csv")
 
-##Read in search terms and create categories of them to filter the full text articles. To pass through this filter they must have one work from each category of filter: science, government, topics, and negative verbs.
-
+#Read in search terms and create four categories
 search_terms <- read_excel("C:/AOS_db/info_tables/Search Terms AOS.xlsx")
 
 search_terms <- search_terms %>%
   mutate(search_term = tolower(search_term),
          search_term = ifelse(search_term_acronym == "yes", paste0(" ", search_term, " "), search_term))
 
-##Break the search terms into categories - government, topics, science, and negative verbs
+#Break the search terms into four categories - government, topics, science, and negative verbs
 gov_terms <- search_terms %>%
   filter(category == "government")
 gov_terms <- gov_terms$search_term
@@ -183,6 +187,7 @@ attack_terms <- search_terms %>%
   filter(category == "negative verbs")
 attack_terms <- attack_terms$search_term
 
+#Add prefixes (anti, anti-) and suffixes (skeptic, denier) to science terms
 suffix_terms <- search_terms %>%
   filter(category == "suffix")
 suffix_terms <- suffix_terms$search_term
@@ -210,6 +215,8 @@ topic_terms <- paste0(topic_terms,  collapse = "|")
 gov_terms <- paste0(gov_terms,  collapse = "|")
 attack_terms <- paste0(attack_terms,  collapse = "|")
 
+#Screen full article text (or RSS descriptions/titles) using article text search term criteria
+#Article text search term criteria = [government] AND [science] AND [topic] AND [negative verb]
 gov_terms_db_text <- keep(screened_rss_feed_db_text$url_text, 
                           function(x) grepl(gov_terms, x))
 science_terms_db_text <- keep(screened_rss_feed_db_text$url_text, 
@@ -225,6 +232,7 @@ aos_raw <- filter(screened_rss_feed_db_text,
                             url_text %in% attack_terms_db_text,
                             url_text %in% topic_terms_db_text)
 
+#Create data frame to use in next R scripts
 aos_raw <- aos_raw %>%
   filter(URL != "https://washingtonpost.com") %>%
   group_by(title, URL, source) %>%
@@ -238,8 +246,7 @@ aos_raw <- aos_raw %>%
 write_csv(aos_raw, "C:/AOS_db/data/06_aos_raw.csv")
 
 
-###Create a data frame of articles that are screened out and were read in fully for the data hygiene scripts.
-
+#Create data frame of "screened out," fully scraped articles
 screened_fully_read <- aos_raw
 fully_read_articles <- screened_rss_feed_db_text
 

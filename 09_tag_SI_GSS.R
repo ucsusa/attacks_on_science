@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
-#### Tags articles with mention of gold standard science or scientific integrity
-#### Runs weekly
+#### Tags articles (TRUE/FALSE) with mentions of gold standard science or scientific integrity in article text.
+#### Runs 1x/week
 
 if (!require("pacman")) {
   install.packages("pacman")

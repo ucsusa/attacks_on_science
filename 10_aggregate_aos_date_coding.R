@@ -1,7 +1,8 @@
 #### R SCRIPT PURPOSE: 
-#### Pulls the most recent 3 days of RSS feed articles and
-### makes groups of articles with 3 matching words from the past 3 days in the title and/or descriptions to determine what articles are describing similar attacks
-#### Runs weekly
+#### Pulls the most recent 2 weeks of RSS feed articles and makes groups of articles based on:
+#### articles +/- 2 days of publication (to approximate a news cycle) and 
+#### with 30% matching words in the title and/or descriptions to identify potential duplicate attacks.
+#### Runs 1x/week
 
 if (!require("pacman")) {
   install.packages("pacman")
@@ -15,12 +16,12 @@ p_load(tidyverse,
        stopwords,
        stringi) 
 
-
 aoses_clean <- read_csv("C:/AOS_db/data/09_aos_clean_gov_si_gss.csv") %>%
   select(title, description, pub_date, URL, source, description_original, url_text, url_text_original, gov_agency, SI_mention, GSS_mention) %>%
   unique()
 
-#Filter data to today's date and the previous 2 weeks to pare down the articles that have already run through this portion of the script since it takes a while to compare all iterations within the  estimated newscycle of +/-2 days. 
+#Filter data to today's date and the previous 2 weeks to limit pare down articles already run through this script 
+#It takes a while to compare all iterations within the estimated news cycle of +/-2 days
 
 todays_date <- Sys.Date()
 two_weeks_ago <- as.Date(todays_date) - 14
@@ -47,7 +48,7 @@ rows <- seq(1:nrow(aoses_clean))
 
 aoses_clean$title <- str_conv(aoses_clean$title, "UTF-8")
 dates <- unique(as.Date(aoses_clean$pub_date))
-dates <- dates[dates > as.Date("2025-10-07")]
+dates <- dates[dates > as.Date("2025-10-07")] 
 all_combos_dates <- data.frame()
 
 #dates[81]:dates[158]
@@ -129,7 +130,6 @@ all_combos_dates <- bind_rows(all_combos, all_combos_dates)
 
 }
 
-
 #write_csv(all_combos_dates, "C:/AOS_db/data/10_all_combos_dates.csv")
 
 total_same_words <- all_combos_dates %>%
@@ -152,7 +152,8 @@ aoses_clean_agg_final <- bind_rows(aoses_clean_agg, aoses_clean_agg_2) %>%
   #select(-c(description_number, total_count, num_in_both)) %>%
   distinct()
 
-##Where there are multiples, pull the article to go into the database using the source prioritization. The New York Times and the Washington Post are legacy sources and no longer used.
+#Where there are multiples, pull the article to go into the database using the source prioritization list
+#The New York Times and the Washington Post are legacy sources and are no longer used
 
 priority_sources <- c("The Hill", "Associated Press", "Stat News", "E&E News", "Stateline Democracy", "Gov Exec", "National Broadcasting Corporation", "National Public Radio", "New York Times", "Washington Post")
 
@@ -165,7 +166,7 @@ aoses_clean_agg_final <- aoses_clean_agg_final %>%
   select(title, description, pub_date, URL, source, description_original, url_text, url_text_original, gov_agency, SI_mention, GSS_mention) %>%
   distinct()
 
-##Pull in already-tested articles
+#Pull in already-tested articles
 already_agg_tested <- read_csv("C:/AOS_db/data/10_aoses_clean_aggregate_aos.csv")
 
 aoses_clean_agg_final <- bind_rows(aoses_clean_agg_final, already_agg_tested) %>%

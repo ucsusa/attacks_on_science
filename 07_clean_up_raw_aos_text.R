@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
-#### Clean up article text to prepare for summaries
-#### Runs 1X/WEEK
+#### Clean up article text that contain potential attacks on science to prepare for subsequent analysis.
+#### Runs 1x/week
 
 if (!require("pacman")) {
   install.packages("pacman")
@@ -12,7 +12,7 @@ p_load(tidyverse)
 gc()
 
 
-### Clean up article text before aggregating and identifying terms related to scientific integrity ###
+### Clean up Article Text Before Next Data Processing Step ###
 
 
 filtered_read_articles <- read_csv("C:/AOS_db/data/06_aos_raw.csv") %>%
@@ -52,5 +52,5 @@ aoses_clean <- aoses_raw %>%
          url_text = str_remove_all(url_text, "\\\\&nbsp|ap news"),
          url_text = str_remove_all(url_text, ". .             . ."))
 
-
+#Create data frame for next R script
 write_csv(aoses_clean, "C:/AOS_db/data/07_aos_clean.csv")

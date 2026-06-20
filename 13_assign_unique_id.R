@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
-#### Assigns unique identifiers to each coded AOS
-#### Runs weekly
+#### Assigns unique identifiers to each human-coded attack on science.
+#### Runs 1x/week
 
 if (!require("pacman")) {
   install.packages("pacman")
@@ -13,7 +13,8 @@ p_load(tidyverse,
 
 human_coding_spreadsheet <- read_csv("C:/AOS_db/data/12_aoses_clean_no_multiples.csv")
 
-##Pull in only articles that are coded as an attack on science and those after 12/19/2025 since attacks on science were fully human coded prior to that date.
+#Pull in only articles that are coded as an attack on science and after 12/19/2025
+#(Attacks on science were fully human coded and collected prior to that date)
 
 aoses_coded <- human_coding_spreadsheet %>%
   filter(aos_presence == 1,

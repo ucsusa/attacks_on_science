@@ -1,6 +1,6 @@
 #### R SCRIPT PURPOSE: 
-#### Formats the screened (2x) articles into a spreadsheet for human coders
-#### Runs 1X/WEEK
+#### Formats screened articles containing a potential attack on science into a spreadsheet for human coders to review.
+#### Runs 1x/week
 
 if (!require("pacman")) {
   install.packages("pacman")
@@ -16,7 +16,7 @@ the_data_to_code <- read_csv("C:/AOS_db/data/10_aoses_clean_aggregate_aos.csv")
 the_data_to_code <- the_data_to_code %>%
   mutate(pub_date = as.Date(pub_date))
 
-##Filter out multiples that have lower numbers of characters because they were likely not fully read in.
+#Filter out multiples that have lower numbers of characters because they were likely not fully read in
 the_data_to_code <- the_data_to_code %>%
   mutate(num_chars = nchar(url_text)) %>%
   group_by(pub_date, title, source) %>%
@@ -25,7 +25,7 @@ the_data_to_code <- the_data_to_code %>%
   unique() %>%
   select(-num_chars)
 
-#Add in the articles that were never read in by scraping or automated pdf save
+#Add in articles that were never read in by scraping or automated pdf save
 articles_to_scrape <- read_csv("C:/AOS_db/data/04_screened_feed_to_read.csv")
 articles_read_in <- read_csv("C:/AOS_db/data/06_screened_read_articles_complete.csv")
 
@@ -39,7 +39,8 @@ articles_never_scraped <- articles_to_scrape %>%
 the_data_to_code <- bind_rows(the_data_to_code, articles_never_scraped)
 
 
-##Set up columns and formatting for human coding. AOS Presence of NA means nobody has yet coded that article.
+#Set up columns and formatting for human coding
+#AOS Presence of NA means nobody has yet coded that article
 human_coding_spreadsheet <- the_data_to_code %>%
   select(-c(url_text, description, url_text_original)) %>%
  rename(`FULL DATE` = pub_date,
@@ -83,8 +84,8 @@ aos_dataframe <- read_excel("C:/AOS_db/data/11_coding_spreadsheet.xlsx") %>%
 
 human_coding_spreadsheet <- bind_rows(aos_dataframe, human_coding_spreadsheet)
 
-##Also removing Stateline articles from before 1/20/2025
-##And truncating character count in url_text to 32767 which is the character limit in an Excel cell.
+#Also removing Stateline articles from before 1/20/2025
+#And truncating character count in url_text to 32767 which is the character limit in an Excel cell
 human_coding_spreadsheet <- human_coding_spreadsheet %>%
   mutate(HEADLINE = str_remove_all(HEADLINE, "- AP News"),
          HEADLINE = str_remove_all(HEADLINE, "STAT+"),
