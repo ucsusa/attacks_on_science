@@ -94,7 +94,6 @@ r_schedule <- data.frame(
 )
 ```
 
-```{r, echo=FALSE}
+```{r render table, echo=FALSE}
 kable(r_schedule, format = "pipe")
 ```
-
