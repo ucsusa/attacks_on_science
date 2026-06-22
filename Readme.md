@@ -93,7 +93,7 @@ r_schedule <- data.frame(
 )
 ```
 
-```{r render table, echo=FALSE}
+```{r render table, echo=FALSE, results = "asis"}
 print(r_schedule)
 
 ```
