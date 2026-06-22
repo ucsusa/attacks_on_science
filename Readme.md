@@ -95,7 +95,7 @@ r_schedule <- data.frame(
 ```
 
 ```{r, echo=FALSE}
-kable(r_schedule, format = "html") %>% 
+kable(r_schedule, format = "markdown") %>% 
   kable_styling(
     bootstrap_options = c("striped"),
     position = "center")
