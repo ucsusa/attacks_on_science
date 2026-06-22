@@ -28,7 +28,6 @@ if (!require("pacman")) {
 } 
 
 p_load(knitr,
-       #kableExtra,
        tidyverse)
 
 opts_chunk$set(echo = TRUE)
@@ -96,9 +95,6 @@ r_schedule <- data.frame(
 ```
 
 ```{r, echo=FALSE}
-kable(r_schedule, format = "pipe") #%>%
-  #kable_styling(
-   # bootstrap_options = c("striped"),
-    #position = "center")
+kable(r_schedule, format = "pipe")
 ```
 
