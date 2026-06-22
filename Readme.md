@@ -94,5 +94,6 @@ r_schedule <- data.frame(
 ```
 
 ```{r render table, echo=FALSE}
-knitr::kable(r_schedule, format = "pipe")
+print(r_schedule)
+
 ```
