@@ -32,6 +32,7 @@ p_load(knitr,
        tidyverse)
 
 opts_chunk$set(echo = TRUE)
+options(knitr.table.format = 'markdown')
 
 r_schedule <- data.frame(
   Name = c("01_read_in_rssfeed", 
