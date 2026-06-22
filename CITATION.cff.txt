@@ -1,0 +1,27 @@
+cff-version: 1.0
+message: R scripts in this repository are free and their use is unrestricted, provided that they are referenced in written materials and linked in online uses.  
+title: Attacks on Science Tracker Data Process
+abstract: The scripts in this repository collect RSS feeds from select news outlets, screen articles for search terms to identify which contain potential attacks on science, organize screened articles into a spreadsheet to be analyzed by trained human coders, and generate various meta and descriptive data. Fully coded and reviewed data are formatted to include in the Union of Concerned Scientists' Attacks on Science Tracker.
+authors:
+  - family-names: Barbati-Dajches
+    given-names: Jules
+    orcid: "https://orcid.org/0000-0003-0373-7334"
+  - family-names: Ellickson
+    given-names: Kristie
+    orcid: "https://orcid.org/0000-0003-1213-5730"
+  - family-names: Velez
+    given-names: Erick
+    orcid: "https://orcid.org/0009-0008-0722-7263"
+  - family-names: Dietrich
+    given-names: Alexa
+    orcid: "https://orcid.org/0000-0001-5036-4804"
+version: 1.0
+date-released: "2026-06-23"
+identifiers:
+  - description: The Union of Concerned Scientists' Attacks on Science Tracker methodology
+    type: doi
+    value: "10.47923/2026.16206"
+  - description: The data that support the Attacks on Science Tracker is available in Harvard Dataverse
+    type: doi
+    value: "10.7910/DVN/PFIZPS"
+repository-code: "https://github.com/ucsusa/attacks_on_science"

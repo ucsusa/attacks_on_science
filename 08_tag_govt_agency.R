@@ -65,5 +65,3 @@ remove_duplicates_in_cell <- function(cell_string) {
 aos_clean_agency$gov_agency <- sapply(aos_clean_agency$gov_agency, remove_duplicates_in_cell)
 
 write_csv(aos_clean_agency, "C:/AOS_db/data/08_aos_clean_gov.csv")
-
-

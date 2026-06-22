@@ -16,4 +16,3 @@ aos_si_gss <- aos_clean_agency %>%
          GSS_mention = str_detect(url_text, "gold standard science|gold-standard science|golden standard of science")) 
 
 write_csv(aos_si_gss, "C:/AOS_db/data/09_aos_clean_gov_si_gss.csv")
-

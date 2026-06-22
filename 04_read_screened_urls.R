@@ -291,4 +291,3 @@ screened_rss_feed_db_text <- bind_rows(screened_rss_feed_db_text, govex_sl) %>%
 
 
 write_csv(screened_rss_feed_db_text, "C:/AOS_db/data/04_rss_feed_screened_read_articles_dfs.csv")
-
