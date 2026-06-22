@@ -30,7 +30,6 @@ if (!require("pacman")) {
 p_load(knitr,
        tidyverse)
 
-opts_chunk$set(echo = TRUE)
 options(knitr.table.format = 'markdown')
 
 r_schedule <- data.frame(
@@ -95,5 +94,5 @@ r_schedule <- data.frame(
 ```
 
 ```{r render table, echo=FALSE}
-kable(r_schedule, format = "pipe")
+knitr::kable(r_schedule, format = "pipe")
 ```
