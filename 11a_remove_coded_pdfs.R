@@ -1,6 +1,6 @@
-####Purpose of this script
+#### R SCRIPT PURPOSE: 
 ####This script deletes saved pdfs forms of the articles that have been human-coded as a data hygiene measure.
-####This script runs weekly.
+#### Runs monthly
 
 
 if (!require("pacman")) {
