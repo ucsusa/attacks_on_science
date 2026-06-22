@@ -1,6 +1,6 @@
 ---
 title: "Readme for Attacks on Science Tracker Data Process"
-output: markdown
+output: github_document
 date: "`r format(Sys.Date(), '%m/%d/%Y')`"
 ---
 ## Readme for Attacks on Science Tracker Data Process
