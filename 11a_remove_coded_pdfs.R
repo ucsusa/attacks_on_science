@@ -2,7 +2,6 @@
 ####This script deletes saved pdfs forms of the articles that have been human-coded as a data hygiene measure.
 #### Runs monthly
 
-
 if (!require("pacman")) {
   install.packages("pacman")
   library(pacman)
