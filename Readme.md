@@ -1,6 +1,5 @@
 Readme for Attacks on Science Tracker Data Process
 ================
-06/22/2026
 
 ##### Last updated: 06/22/2026
 
@@ -51,6 +50,7 @@ short description, and how frequently it runs.
 | 09_tag_SI_GSS | Tags articles (TRUE/FALSE) with mentions of gold standard science or scientific integrity in article text | 1x/week |
 | 10_aggregate_aos_date_coding | Pulls the most recent 2 weeks of RSS feed articles and makes groups of articles based on: articles +/- 2 days of publication (to approximate a news cycle) and with 30% matching words in the title and/or descriptions to identify potential duplicate attacks | 1x/week |
 | 11_human_coding_spreadsheet | Formats screened articles containing a potential attack on science into a spreadsheet for human coders to review | 1x/week |
+| 11a_remove_coded_pdfs | Deletes pdfs that have already been human coded | Monthly |
 | 12_flag_aos_multiples | Runs a second duplicate check: flags articles coded in the same way and occur within +/- 2 days | 1x/week |
 | 13_assign_unique_id | Assigns unique identifiers to each human-coded attack on science | 1x/week |
 | 14_save_aos_citations | Saves meta data of each article that contain an attack on science, confirmed by human coders | 1x/week |
@@ -60,3 +60,5 @@ short description, and how frequently it runs.
 | 18_combine_human_rss_coding_data_sets | Combines and formats the data from human-driven and automated data collection | 1x/week |
 | 19_make_a_workbook | Creates a workbook with a readme from the combined data from human-driven and automated data collection for Attacks on Science Tracker | 1x/week |
 | ID_negative_verbs | Identified most common verbs used in articles (and their headlines) from Jan-Apr 2025 that humans confirmed contained an attack on science. This was used to inform the initial list of negative verb search terms | N/A |
+| 999_task_scheduler | Script used to set up a frequency for running the data flow from rss feed to the AOS spreadsheet. | N/A |
+| 999_task_scheduler_jbd | Script used to set up a frequency for running the data flow from rss feed to the AOS spreadsheet. | N/A |

@@ -1,25 +1,17 @@
 #### R SCRIPT PURPOSE: 
 #### Establishes TaskScheduler to automate the rest of the script train 
-#### Runs (?) How often will this script run?
+#### This script runs when there is a new file added or deleted.
 
-
-### Logistics for R Script ###
-
-
-#Checking if pacman is installed, installing if missing, and loading it
 if (!require("pacman")) {
   install.packages("pacman")
   library(pacman)
-} #to install, load, and update multiple packages at one once
+}
 
-#Installing (if not already installed) and loading necessary R packages
 p_load(taskscheduleR)
 
-#establish today's date
 current_date <- format(Sys.Date(), "%m/%d/%Y")
 
 # Daily grab rss feed
-# Define the path to your R script
 myscript <- "C:/AOS_db/r_scripts/01_read_in_rssfeed.R"
 
 taskscheduler_create(taskname = "01_ReadInrssfeed_jbd",

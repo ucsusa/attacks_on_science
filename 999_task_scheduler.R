@@ -1,25 +1,17 @@
 #### R SCRIPT PURPOSE: 
 #### Establishes TaskScheduler to automate the rest of the script train 
-#### Runs (?) How often will this script run?
+#### This script runs when there is an added or deleted r script
 
-
-### Logistics for R Script ###
-
-
-#Checking if pacman is installed, installing if missing, and loading it
 if (!require("pacman")) {
   install.packages("pacman")
   library(pacman)
-} #to install, load, and update multiple packages at one once
+}
 
-#Installing (if not already installed) and loading necessary R packages
 p_load(taskscheduleR)
 
-#establish today's date
 current_date <- format(Sys.Date(), "%m/%d/%Y")
 
 # Daily grab rss feed
-# Define the path to your R script
 myscript <- "C:/AOS_db/r_scripts/01_read_in_rssfeed.R"
 
 taskscheduler_create(taskname = "01_ReadInrssfeed",
@@ -92,7 +84,7 @@ taskscheduler_create(taskname = "09_tag_SI_GSS",
                      starttime = "08:40",
                      days = "SAT")
 
-# Weekly tagging of full text screen for mention of gold standar science and scientifi integrity
+# Weekly tagging of full text screen for mention of gold standar science and scientific integrity
 myscript <- "C:/AOS_db/r_scripts/10_aggregate_aos_date_coding.R"
 taskscheduler_create(taskname = "10_aggregate_aos_date_coding",
                      rscript = myscript,
