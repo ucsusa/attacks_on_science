@@ -20,7 +20,7 @@ gc()
 
 
 #Identify and read the text in the saved pdfs into the data frame so that the fully read articles can then be screened with second AOS search term filter
-screened_articles <- read_csv("C:/AOS_db/data/02_rss_feed_screened_dfs.csv") %>%
+screened_articles <- read_csv("../data/02_rss_feed_screened_dfs.csv") %>%
   mutate(clean_title = tolower(title),
          clean_title = gsub("[[:punct:]]", "", clean_title),
          clean_title = gsub("  ", " ", clean_title),
@@ -28,7 +28,7 @@ screened_articles <- read_csv("C:/AOS_db/data/02_rss_feed_screened_dfs.csv") %>%
          clean_title = str_trim(clean_title))
 
 #Titles require adequate cleaning (no punctuation, no capitals, no extra spaces, no source names in them) in order to join with the pdf file names
-scraped_articles <- read_csv("C:/AOS_db/data/04_rss_feed_screened_read_articles_dfs.csv") %>%
+scraped_articles <- read_csv("../data/04_rss_feed_screened_read_articles_dfs.csv") %>%
   mutate(clean_title = tolower(title),
          clean_title = gsub("[[:punct:]]", "", clean_title),
          clean_title = gsub("  ", " ", clean_title),
@@ -45,7 +45,7 @@ already_scraped_articles <- unique(scraped_articles$clean_title)
 need_pdf <- screened_articles %>%
   filter(!title %in% scraped_articles$title)
 
-articles_already_read_in <- read_csv("C:/AOS_db/data/06_screened_read_articles_complete.csv") %>%
+articles_already_read_in <- read_csv("../data/06_screened_read_articles_complete.csv") %>%
   mutate(num_chars = nchar(url_text)) %>%
   filter(!grepl("You have been blocked from The New York Times|Press & Hold to confirm you are|Something went wrong. Please try again later|This site can’t be reached", url_text),
          source != "Gov Info",
@@ -63,7 +63,7 @@ articles_already_read_in_titles <- unique(articles_already_read_in$clean_title)
 
 need_pdf <- filter(need_pdf, !clean_title %in% articles_already_read_in_titles)
 
-pdf_folder <- list.files("C:/AOS_db/pdf_articles")
+pdf_folder <- list.files("../pdf_articles")
 
 already_read_pdfs_df <- data.frame(article_names = pdf_folder, stringsAsFactors = FALSE)
 
@@ -78,7 +78,7 @@ already_read_pdfs_titles <- already_read_pdfs_df %>%
          clean_title = str_trim(clean_title))
 
 #Remove pdfs with small file sizes, they are blank
-setwd("C:/AOS_db/pdf_articles")
+setwd("../pdf_articles")
 
 already_read_pdfs_size <- data.frame(stringsAsFactors = FALSE)
 
@@ -100,7 +100,7 @@ already_read_pdfs_titles <- already_read_pdfs_titles_df$clean_title
 need_to_save_pdfs <- need_pdf %>%
   filter(!clean_title %in% already_read_pdfs_titles)
 
-write_csv(need_to_save_pdfs, "C:/AOS_db/data/06_screened_articles_still_need_pdf.csv")
+write_csv(need_to_save_pdfs, "../data/06_screened_articles_still_need_pdf.csv")
 
 need_pdf <- need_pdf %>%
   filter(clean_title %in% already_read_pdfs_titles)
@@ -112,7 +112,7 @@ screened_articles_w_pdf <- left_join(need_pdf, already_read_pdfs_titles_df, by =
 #Join matching pdf from the folder, pull in text into the url_text column for articles not scraped properly.
 checking_4_read_all <- data.frame(stringsAsFactors = FALSE)
 
-setwd("C:/AOS_db/pdf_articles")
+setwd("../pdf_articles")
 
 ticker <- 0
 
@@ -120,7 +120,7 @@ for(i in 1:nrow(screened_articles_w_pdf)){
       checking_4_read_split <- screened_articles_w_pdf %>%
     slice(i)
   if(nrow(checking_4_read_split) > 0){
-    pdf_to_read <- paste0("C:/AOS_db/pdf_articles/",checking_4_read_split$article_names)
+    pdf_to_read <- paste0("../pdf_articles/",checking_4_read_split$article_names)
     url_text_read <-  pdftools::pdf_text(pdf_to_read)
     url_text_read <- as.character(url_text_read) %>% 
       paste(., collapse = ". ") %>% 
@@ -142,7 +142,7 @@ for(i in 1:nrow(screened_articles_w_pdf)){
 ### Apply Search Terms to Screen Articles for Potential Attacks on Science ###
 
 
-completed_saved_articles <- read_csv("C:/AOS_db/data/06_screened_read_articles_complete.csv")
+completed_saved_articles <- read_csv("../data/06_screened_read_articles_complete.csv")
 
 screened_rss_feed_db_text <- bind_rows(completed_saved_articles, 
                                        checking_4_read_all, scraped_articles) %>% 
@@ -161,7 +161,7 @@ screened_rss_feed_db_text <- screened_rss_feed_db_text %>%
   select(title, description, pub_date, URL, source, description_original, url_text, clean_title) %>%
   distinct()
 
-write_csv(screened_rss_feed_db_text, "C:/AOS_db/data/06_screened_read_articles_complete.csv")
+write_csv(screened_rss_feed_db_text, "../data/06_screened_read_articles_complete.csv")
 
 #Read in search terms and create four categories
 search_terms <- read_excel("C:/AOS_db/info_tables/Search Terms AOS.xlsx")

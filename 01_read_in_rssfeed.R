@@ -184,4 +184,4 @@ all_feed <- bind_rows(nbc_feed,
 todays_feed <- all_feed %>%
   filter(pub_date > (Sys.Date() - 1))
 
-write_csv(unique(todays_feed), paste0("C:/AOS_db/data/01_rss_feed_dfs_", Sys.Date(), ".csv"))
+write_csv(unique(todays_feed), paste0("../data/01_rss_feed_dfs_", Sys.Date(), ".csv"))

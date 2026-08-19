@@ -10,10 +10,10 @@ if (!require("pacman")) {
 p_load(tidyverse,
        janitor) 
 
-human_coding_spreadsheet <- read_csv("C:/AOS_db/data/15_coding_spreadsheet_unique_id_si.csv")
+human_coding_spreadsheet <- read_csv("../data/15_coding_spreadsheet_unique_id_si.csv")
 
 #Read in type, topic, and completion stage variable abbreviated definitions
-process_descriptions <- read_csv("C:/AOS_db/info_tables/999_aos_type_topic_definitions.csv") %>%
+process_descriptions <- read_csv("../info_tables/999_aos_type_topic_definitions.csv") %>%
   mutate(specific_category_name = gsub(" ", "_", tolower(specific_category_name)),
          specific_category_name = gsub("_&", "", tolower(specific_category_name)),
          specific_category_name = gsub("\\/", "_", tolower(specific_category_name))) %>%
@@ -63,10 +63,17 @@ df_type <- aoses_long %>%
 
 df_type <- df_type %>%
   group_by(headline, full_date, link, article_source, agg_objectid) %>%
-  summarise(attack_type_list = map(attack_type, ~make_a_list(unique(attack_type))),
-            summary_type_list = map(specific_category_summary_description, ~make_a_list(unique(specific_category_summary_description)))) %>%
+  summarise(attack_type_list = make_a_list(unique(attack_type)),
+            summary_type_list = make_a_list(unique(specific_category_summary_description))) %>%
   ungroup() %>%
   unique()
+
+# df_type <- df_type %>%
+#   group_by(headline, full_date, link, article_source, agg_objectid) %>%
+#   summarise(attack_type_list = map(attack_type, ~make_a_list(unique(attack_type))),
+#             summary_type_list = map(specific_category_summary_description, ~make_a_list(unique(specific_category_summary_description)))) %>%
+#   ungroup() %>%
+#   unique()
 
 
 df_topic <- aoses_long %>%
@@ -77,8 +84,8 @@ df_topic <- aoses_long %>%
 
 df_topic <- df_topic %>%
   group_by(headline, full_date, link, article_source, agg_objectid) %>%
-  summarise(attack_topic_list = map(attack_topic, ~make_a_list(unique(attack_topic))),
-            summary_topic_list = map(specific_category_summary_description, ~make_a_list(unique(specific_category_summary_description)))) %>%
+  summarise(attack_topic_list = make_a_list(unique(attack_topic)),
+            summary_topic_list = make_a_list(unique(specific_category_summary_description))) %>%
   ungroup() %>%
   unique()
          
@@ -91,8 +98,8 @@ df_enacted <- aoses_long %>%
 
 df_enacted <- df_enacted %>%
   group_by(headline, full_date, link, article_source, agg_objectid) %>%
-  summarise(enacted_list = map(enacted, ~make_a_list(unique(enacted))),
-            summary_enacted_list = map(specific_category_summary_description, ~make_a_list(unique(specific_category_summary_description)))) %>%
+  summarise(enacted_list = make_a_list(unique(enacted)),
+            summary_enacted_list = make_a_list(unique(specific_category_summary_description))) %>%
   ungroup() %>%
   unique()
 
@@ -109,7 +116,7 @@ aoses_agencies <- aoses_long %>%
 
 aoses_agencies_lists <- aoses_agencies %>%
   group_by(agg_objectid) %>%
-  summarise(agencies_involved_list = map(agencies_involved, ~make_a_list(unique(agencies_involved)))) %>%
+  summarise(agencies_involved_list = make_a_list(unique(agencies_involved))) %>%
   ungroup() %>%
   unique() %>%
   mutate(attack_attacks = ifelse(str_count(agencies_involved_list, ",") > 1, 'attack', 'attacks'))
@@ -138,4 +145,4 @@ aos_summaries <- aos_type_topic %>%
   ungroup()
   
 
-write.csv(aos_summaries, "C:/AOS_db/data/16_aos_titles_summaries.csv", row.names = FALSE)
+write.csv(aos_summaries, "../data/16_aos_titles_summaries.csv", row.names = FALSE)

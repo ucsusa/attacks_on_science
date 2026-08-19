@@ -14,7 +14,7 @@ p_load(tidyverse,
 
 gc()
 
-setwd("C:/AOS_db/data/")
+setwd("../data/")
 
 
 ### Compiling RSS Feed Data from Previous Three Days, Generally Reflecting a News Cycle ###
@@ -50,7 +50,7 @@ todays_feed <- map_dfr(feed_files, read_csv) %>%
 ### Reading In and Cleaning Up Search Terms ###
 
 
-search_terms <- read_excel("C:/AOS_db/info_tables/Search Terms AOS.xlsx")
+search_terms <- read_excel("../info_tables/Search Terms AOS.xlsx")
 
 search_terms <- search_terms %>%
   mutate(search_term = tolower(search_term))
@@ -115,11 +115,11 @@ todays_feed_final <- filter(todays_feed,
 
 
 #Reading in past articles from RSS feeds that have already been screened for key words
-existing_feed <- read_csv("C:/AOS_db/data/02_rss_feed_screened_dfs.csv") %>%
+existing_feed <- read_csv("../data/02_rss_feed_screened_dfs.csv") %>%
   filter(source != "Gov Info")
 
 all_feed_final <- bind_rows(todays_feed_final, existing_feed) %>% 
-  unique() 
+  distinct() 
 
 #Eliminating duplicate articles, videos, and opinion articles. Remove articles before 1/20/25. Stateline keeps its rss feed back to 2024
 all_feed_final_no_dupes <- all_feed_final %>%
@@ -146,4 +146,4 @@ all_feed_final_no_dupes <- all_feed_final %>%
          !grepl("today.com/video", URL),
          pub_date > "2025-01-19")
 
-write_csv(all_feed_final_no_dupes, "C:/AOS_db/data/02_rss_feed_screened_dfs.csv")
+write_csv(all_feed_final_no_dupes, "../data/02_rss_feed_screened_dfs.csv")

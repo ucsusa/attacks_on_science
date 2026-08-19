@@ -16,7 +16,7 @@ p_load(tidyverse,
        stopwords,
        stringi) 
 
-aoses_clean <- read_csv("C:/AOS_db/data/09_aos_clean_gov_si_gss.csv") %>%
+aoses_clean <- read_csv("../data/09_aos_clean_gov_si_gss.csv") %>%
   select(title, description, pub_date, URL, source, description_original, url_text, url_text_original, gov_agency, SI_mention, GSS_mention) %>%
   unique()
 
@@ -51,7 +51,6 @@ dates <- unique(as.Date(aoses_clean$pub_date))
 dates <- dates[dates > as.Date("2025-10-07")] 
 all_combos_dates <- data.frame()
 
-#dates[81]:dates[158]
 for(k in dates){
   aos_date_1 <- as.Date(k) + 2
   aos_date_2 <- as.Date(k) - 2
@@ -110,7 +109,9 @@ for(i in compare_1){
       compare_single <- compare_single %>%
         unite("compareobjectid", compareobjectid_1, compareobjectid_2, na.rm = T, remove = TRUE) %>%
         filter(!is.null(feature),
-               nchar(feature) > 1) %>%
+               nchar(feature) > 1,
+               trimws(feature) != "",
+               grepl("[A-Za-z0-9]", feature)) %>%
         mutate(total_count = n()/2) %>%
         group_by(feature, total_count) %>%
         mutate(count = n()) %>%
@@ -130,7 +131,16 @@ all_combos_dates <- bind_rows(all_combos, all_combos_dates)
 
 }
 
-#write_csv(all_combos_dates, "C:/AOS_db/data/10_all_combos_dates.csv")
+#write_csv(all_combos_dates, "../data/10_all_combos_dates_12.csv")
+
+# setwd("../data/")
+# all_combos_files <- list.files()
+# all_combos_files <- all_combos_files[grepl("all_combos_dates", all_combos_files)]
+# 
+# all_combos_data <- map_dfr(all_combos_files, read_csv) %>%
+#   distinct()
+# 
+# all_combos_dates <- all_combos_data
 
 total_same_words <- all_combos_dates %>%
   mutate(percent_agreement = num_in_both/total_count,
@@ -167,7 +177,7 @@ aoses_clean_agg_final <- aoses_clean_agg_final %>%
   distinct()
 
 #Pull in already-tested articles
-already_agg_tested <- read_csv("C:/AOS_db/data/10_aoses_clean_aggregate_aos.csv")
+already_agg_tested <- read_csv("../data/10_aoses_clean_aggregate_aos.csv")
 
 aoses_clean_agg_final <- bind_rows(aoses_clean_agg_final, already_agg_tested) %>%
   distinct() %>%
@@ -179,4 +189,4 @@ aoses_clean_agg_final <- bind_rows(aoses_clean_agg_final, already_agg_tested) %>
   select(title, description, pub_date, URL, source, description_original, url_text, url_text_original, gov_agency, SI_mention, GSS_mention) %>%
   distinct()
 
-write_csv(aoses_clean_agg_final, "C:/AOS_db/data/10_aoses_clean_aggregate_aos.csv")
+write_csv(aoses_clean_agg_final, "../data/10_aoses_clean_aggregate_aos.csv")
