@@ -95,7 +95,7 @@ science_terms <- c(science_terms, topic_suffix)
 science_terms <- paste0(science_terms,  collapse = "|")
 topic_terms <- paste0(topic_terms,  collapse = "|")
 gov_terms <- paste0(gov_terms,  collapse = "|")
-attack_terms <- paste0(attack_terms,  collapse = "|")
+attack_terms <- paste0(attack_terms,, m  collapse = "|")
 
 #Screen RSS descriptions/titles using RSS feed search term criteria
 #RSS feed search term criteria = ([government] OR [science]) AND [topic] AND [negative verb]
@@ -115,7 +115,7 @@ todays_feed_final <- filter(todays_feed,
 
 
 #Reading in past articles from RSS feeds that have already been screened for key words
-existing_feed <- read_csv("../data/02_rss_feed_screened_dfs.csv") %>%
+existing_feed <- read_csv("02_rss_feed_screened_dfs.csv") %>%
   filter(source != "Gov Info")
 
 all_feed_final <- bind_rows(todays_feed_final, existing_feed) %>% 
@@ -146,4 +146,4 @@ all_feed_final_no_dupes <- all_feed_final %>%
          !grepl("today.com/video", URL),
          pub_date > "2025-01-19")
 
-write_csv(all_feed_final_no_dupes, "../data/02_rss_feed_screened_dfs.csv")
+write_csv(all_feed_final_no_dupes, "02_rss_feed_screened_dfs.csv")

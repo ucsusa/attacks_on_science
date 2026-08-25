@@ -112,15 +112,13 @@ screened_articles_w_pdf <- left_join(need_pdf, already_read_pdfs_titles_df, by =
 #Join matching pdf from the folder, pull in text into the url_text column for articles not scraped properly.
 checking_4_read_all <- data.frame(stringsAsFactors = FALSE)
 
-setwd("../pdf_articles")
-
 ticker <- 0
 
 for(i in 1:nrow(screened_articles_w_pdf)){ 
       checking_4_read_split <- screened_articles_w_pdf %>%
     slice(i)
   if(nrow(checking_4_read_split) > 0){
-    pdf_to_read <- paste0("../pdf_articles/",checking_4_read_split$article_names)
+    pdf_to_read <- checking_4_read_split$article_names
     url_text_read <-  pdftools::pdf_text(pdf_to_read)
     url_text_read <- as.character(url_text_read) %>% 
       paste(., collapse = ". ") %>% 
@@ -164,7 +162,7 @@ screened_rss_feed_db_text <- screened_rss_feed_db_text %>%
 write_csv(screened_rss_feed_db_text, "../data/06_screened_read_articles_complete.csv")
 
 #Read in search terms and create four categories
-search_terms <- read_excel("C:/AOS_db/info_tables/Search Terms AOS.xlsx")
+search_terms <- read_excel("../info_tables/Search Terms AOS.xlsx")
 
 search_terms <- search_terms %>%
   mutate(search_term = tolower(search_term),
@@ -243,7 +241,7 @@ aos_raw <- aos_raw %>%
   ungroup() %>%
   distinct()
 
-write_csv(aos_raw, "C:/AOS_db/data/06_aos_raw.csv")
+write_csv(aos_raw, "../data/06_aos_raw.csv")
 
 
 #Create data frame of "screened out," fully scraped articles
@@ -253,4 +251,4 @@ fully_read_articles <- screened_rss_feed_db_text
 screened_out_fully_read <- fully_read_articles %>%
   filter(!title %in% screened_fully_read$title)
 
-write_csv(screened_out_fully_read, "C:/AOS_db/data/06_aos_screenedout.csv")
+write_csv(screened_out_fully_read, "../data/06_aos_screenedout.csv")
