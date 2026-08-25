@@ -95,7 +95,7 @@ science_terms <- c(science_terms, topic_suffix)
 science_terms <- paste0(science_terms,  collapse = "|")
 topic_terms <- paste0(topic_terms,  collapse = "|")
 gov_terms <- paste0(gov_terms,  collapse = "|")
-attack_terms <- paste0(attack_terms,, m  collapse = "|")
+attack_terms <- paste0(attack_terms,  collapse = "|")
 
 #Screen RSS descriptions/titles using RSS feed search term criteria
 #RSS feed search term criteria = ([government] OR [science]) AND [topic] AND [negative verb]
