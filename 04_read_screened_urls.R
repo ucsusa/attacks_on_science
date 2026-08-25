@@ -173,7 +173,7 @@ screened_rss_feed_db_all <- data.frame()
 ticker <- 0
 
 #Writing and running a function for E&E News articles
-for(i in 175:nrow(screened_feed_to_read)){ 
+for(i in 1:nrow(screened_feed_to_read)){ 
   screened_rss_feed_db_split <- slice(screened_feed_to_read, i) 
   if (screened_rss_feed_db_split$source == "E&E News" & !grepl("politico", screened_rss_feed_db_split$URL)) {
     
