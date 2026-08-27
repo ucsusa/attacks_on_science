@@ -50,14 +50,17 @@ ap_feed <- tidyfeed("https://rss.app/feeds/6t9bqguHo638jpxk.xml") %>%
 
 
 #Pulling daily E&E News RSS Feed and cleaning it up
-e_and_e_news_feed_1 <- tidyfeed("https://rss.politico.com/eenews-eed") %>%
-  mutate(title = item_title, 
-         description = item_description, 
-         pub_date = item_pub_date, 
-         URL = item_link, 
-         source = "E&E News") %>% 
-  select(title:source) 
+## Politico purchased E&E News, and we will update this part of hte script starting on August 24, 2026. This link to rss feed is no longer pulling anything more recent than August 8, 2026. https://rss.politico.com/eenews-eed
 
+# e_and_e_news_feed_1 <- tidyfeed("https://rss.politico.com/eenews-eed") %>%
+#   mutate(title = item_title, 
+#          description = item_description, 
+#          pub_date = item_pub_date, 
+#          URL = item_link, 
+#          source = "E&E News") %>% 
+#   select(title:source) 
+
+##This is the "Energy and Environment" news from Politico
 e_and_e_news_feed_2 <- tidyfeed("https://rss.politico.com/energy.xml") %>%
   mutate(title = item_title, 
          description = item_description, 
@@ -74,6 +77,7 @@ e_and_e_news_feed_3 <- tidyfeed("https://rss.politico.com/healthcare.xml") %>%
          source = "E&E News") %>% 
   select(title:source) 
 
+##This URL will go away on Aug 31st, so we will retire this line on that date.
 e_and_e_news_feed_4 <- tidyfeed("https://www.eenews.net/articles/feed/") %>% 
   mutate(title = item_title, 
          description = item_description, 
@@ -83,7 +87,7 @@ e_and_e_news_feed_4 <- tidyfeed("https://www.eenews.net/articles/feed/") %>%
   select(title:source) 
 
 
-e_and_e_news_feed <- bind_rows(e_and_e_news_feed_1, e_and_e_news_feed_2, e_and_e_news_feed_3, e_and_e_news_feed_4) %>%
+e_and_e_news_feed <- bind_rows(e_and_e_news_feed_2, e_and_e_news_feed_3, e_and_e_news_feed_4) %>%
   distinct()
 
 
@@ -184,4 +188,4 @@ all_feed <- bind_rows(nbc_feed,
 todays_feed <- all_feed %>%
   filter(pub_date > (Sys.Date() - 1))
 
-write_csv(unique(todays_feed), paste0("C:/AOS_db/data/01_rss_feed_dfs_", Sys.Date(), ".csv"))
+write_csv(unique(todays_feed), paste0("../data/01_rss_feed_dfs_", Sys.Date(), ".csv"))

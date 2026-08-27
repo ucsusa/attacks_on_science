@@ -11,7 +11,7 @@ p_load(tidyverse,
        readxl,
        openxlsx) 
 
-the_data_to_code <- read_csv("C:/AOS_db/data/10_aoses_clean_aggregate_aos.csv")
+the_data_to_code <- read_csv("../data/10_aoses_clean_aggregate_aos.csv")
 
 the_data_to_code <- the_data_to_code %>%
   mutate(pub_date = as.Date(pub_date))
@@ -26,8 +26,8 @@ the_data_to_code <- the_data_to_code %>%
   select(-num_chars)
 
 #Add in articles that were never read in by scraping or automated pdf save
-articles_to_scrape <- read_csv("C:/AOS_db/data/04_screened_feed_to_read.csv")
-articles_read_in <- read_csv("C:/AOS_db/data/06_screened_read_articles_complete.csv")
+articles_to_scrape <- read_csv("../data/04_screened_feed_to_read.csv")
+articles_read_in <- read_csv("../data/06_screened_read_articles_complete.csv")
 
 articles_never_scraped <- articles_to_scrape %>%
   filter(!clean_title %in% unique(articles_read_in$clean_title)) %>%
@@ -76,11 +76,11 @@ human_coding_spreadsheet <- the_data_to_code %>%
 
 
 #Bring in existing human coding spreadsheet so that coded articles are not overwritten
-aos_dataframe <- read_excel("C:/AOS_db/data/11_coding_spreadsheet.xlsx") %>%
+aos_dataframe <- read_excel("../data/11_coding_spreadsheet.xlsx") %>%
   mutate(`FULL DATE` = as.Date(`FULL DATE`, format = "%m/%d/%Y"))
 
 #Save a copy of the existing human coding spreadsheet until the process is more stable.
-#write_csv(aos_dataframe, paste0("C:/AOS_db/data/11_coding_spreadsheet_", Sys.Date(), ".csv"))
+#write_csv(aos_dataframe, paste0("../data/11_coding_spreadsheet_", Sys.Date(), ".csv"))
 
 human_coding_spreadsheet <- bind_rows(aos_dataframe, human_coding_spreadsheet)
 
@@ -109,4 +109,4 @@ addWorksheet(wb, "coding")
 
 writeData(wb, "coding", human_coding_spreadsheet)
 
-saveWorkbook(wb, "C:/AOS_db/data/11_coding_spreadsheet.xlsx", overwrite = TRUE)
+saveWorkbook(wb, "../data/11_coding_spreadsheet.xlsx", overwrite = TRUE)
