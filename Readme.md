@@ -60,5 +60,3 @@ short description, and how frequently it runs.
 | 18_combine_human_rss_coding_data_sets | Combines and formats the data from human-driven and automated data collection | 1x/week |
 | 19_make_a_workbook | Creates a workbook with a readme from the combined data from human-driven and automated data collection for Attacks on Science Tracker | 1x/week |
 | ID_negative_verbs | Identified most common verbs used in articles (and their headlines) from Jan-Apr 2025 that humans confirmed contained an attack on science. This was used to inform the initial list of negative verb search terms | N/A |
-| 999_task_scheduler | Script used to set up a frequency for running the data flow from rss feed to the AOS spreadsheet. | N/A |
-| 999_task_scheduler_jbd | Script used to set up a frequency for running the data flow from rss feed to the AOS spreadsheet. | N/A |
