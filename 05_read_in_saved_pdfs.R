@@ -116,7 +116,7 @@ screened_articles_no_pdf <- screened_articles_no_pdf %>%
          !clean_title %in% human_coded_clean_titles,
          !source %in% c("Washington Post", "New York Times", "Gov Info"))
 
-write_csv(screened_articles_no_pdf, "../results/05_screened_feed_to_read_not_scraped.csv")
+write_csv(screened_articles_no_pdf, "../testing_the_script/results/05_screened_feed_to_read_not_scraped.csv")
 
 pdf_folder <- "../pdf_articles/"
 

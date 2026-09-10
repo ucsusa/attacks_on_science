@@ -112,13 +112,15 @@ screened_articles_w_pdf <- left_join(need_pdf, already_read_pdfs_titles_df, by =
 #Join matching pdf from the folder, pull in text into the url_text column for articles not scraped properly.
 checking_4_read_all <- data.frame(stringsAsFactors = FALSE)
 
+setwd("../pdf_articles")
+
 ticker <- 0
 
 for(i in 1:nrow(screened_articles_w_pdf)){ 
       checking_4_read_split <- screened_articles_w_pdf %>%
     slice(i)
   if(nrow(checking_4_read_split) > 0){
-    pdf_to_read <- checking_4_read_split$article_names
+    pdf_to_read <- paste0("../pdf_articles/",checking_4_read_split$article_names)
     url_text_read <-  pdftools::pdf_text(pdf_to_read)
     url_text_read <- as.character(url_text_read) %>% 
       paste(., collapse = ". ") %>% 

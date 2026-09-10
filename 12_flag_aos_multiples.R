@@ -142,7 +142,7 @@ all_combos_groups <- all_combos_groups %>%
 #The New York Times and the Washington Post are legacy sources and are no longer used
 #If the sources are the same, choose the chronologically first article
 
-priority_sources <- c("The Hill", "Associated Press", "Stat News", "E&E News", "Stateline Democracy", "Gov Exec", "National Broadcasting Corporation", "National Public Radio", "New York Times", "Washington Post")
+priority_sources <- c("The Hill", "Associated Press", "Stat News", "E&E News", "Politico", "Stateline Democracy", "Gov Exec", "National Broadcasting Corporation", "National Public Radio", "New York Times", "Washington Post")
 
 aoses_clean_agg_final <- all_combos_groups %>%
   mutate(article_source = factor(article_source, levels = priority_sources)) %>%
