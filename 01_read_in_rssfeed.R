@@ -29,7 +29,7 @@ nbc_feed <- tidyfeed("https://feeds.nbcnews.com/nbcnews/public/news") %>%
 
 
 #Pulling daily National Public Radio (NPR) RSS Feed and cleaning it up
-npr_feed <- tidyfeed("https://feeds.npr.org/1003/rss.xml") %>% 
+npr_feed <- tidyfeed("https://rss.app/feeds/bMSQqU14WeS5WGus.xml") %>% 
   mutate(title = item_title, 
          description = item_description, 
          pub_date = item_pub_date, 
@@ -49,42 +49,30 @@ ap_feed <- tidyfeed("https://rss.app/feeds/6t9bqguHo638jpxk.xml") %>%
   select(title:source) 
 
 
-#Pulling daily E&E News RSS Feed and cleaning it up
-e_and_e_news_feed_1 <- tidyfeed("https://rss.politico.com/eenews-eed") %>%
-  mutate(title = item_title, 
+#Pulling daily Politico rss feed and cleaning it up
+
+feed_categories <- c("congress", "healthcare", "defense", "economy", "energy", "politics-news")
+
+feed_urls <- sapply(feed_categories, function(w) {
+paste0("https://rss.politico.com/", w, ".xml")
+})
+
+names(feed_urls) <- NULL
+
+politico_feeds <- data.frame()
+for(i in feed_urls){
+  politico_feed <- tidyfeed(i) %>%
+    mutate(title = item_title, 
          description = item_description, 
          pub_date = item_pub_date, 
          URL = item_link, 
-         source = "E&E News") %>% 
+         source = "Politico") %>% 
   select(title:source) 
+  
+  politico_feeds <- bind_rows(politico_feed, politico_feeds) %>%
+    distinct()
+}
 
-e_and_e_news_feed_2 <- tidyfeed("https://rss.politico.com/energy.xml") %>%
-  mutate(title = item_title, 
-         description = item_description, 
-         pub_date = item_pub_date, 
-         URL = item_link, 
-         source = "E&E News") %>% 
-  select(title:source) 
-
-e_and_e_news_feed_3 <- tidyfeed("https://rss.politico.com/healthcare.xml") %>% 
-  mutate(title = item_title, 
-         description = item_description, 
-         pub_date = item_pub_date, 
-         URL = item_link, 
-         source = "E&E News") %>% 
-  select(title:source) 
-
-e_and_e_news_feed_4 <- tidyfeed("https://www.eenews.net/articles/feed/") %>% 
-  mutate(title = item_title, 
-         description = item_description, 
-         pub_date = item_pub_date, 
-         URL = item_link, 
-         source = "E&E News") %>% 
-  select(title:source) 
-
-
-e_and_e_news_feed <- bind_rows(e_and_e_news_feed_1, e_and_e_news_feed_2, e_and_e_news_feed_3, e_and_e_news_feed_4) %>%
-  distinct()
 
 
 #Pulling daily The Hill RSS Feed and cleaning it up
@@ -174,7 +162,7 @@ all_feed <- bind_rows(nbc_feed,
                       npr_feed,
                       ap_feed, 
                       the_hill_feed, 
-                      e_and_e_news_feed,
+                      politico_feeds,
                       govexec_feed_df,
                       stateline_demo_feed,
                       statnews_demo_feed) %>%
@@ -184,4 +172,4 @@ all_feed <- bind_rows(nbc_feed,
 todays_feed <- all_feed %>%
   filter(pub_date > (Sys.Date() - 1))
 
-write_csv(unique(todays_feed), paste0("C:/AOS_db/data/01_rss_feed_dfs_", Sys.Date(), ".csv"))
+write_csv(unique(todays_feed), paste0("../data/01_rss_feed_dfs_", Sys.Date(), ".csv"))

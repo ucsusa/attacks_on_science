@@ -9,7 +9,7 @@ if (!require("pacman")) {
 
 p_load(tidyverse)
 
-human_coding_spreadsheet <- read_csv("C:/AOS_db/data/13_coding_spreadsheet_unique_id.csv")
+human_coding_spreadsheet <- read_csv("../data/13_coding_spreadsheet_unique_id.csv")
 
 
 human_coding_spreadsheet_si <- human_coding_spreadsheet %>% 
@@ -22,4 +22,4 @@ human_coding_spreadsheet_si <- human_coding_spreadsheet %>%
     TRUE ~ "no"
   ))
 
-write_csv(human_coding_spreadsheet_si, "C:/AOS_db/data/15_coding_spreadsheet_unique_id_si.csv")
+write_csv(human_coding_spreadsheet_si, "../data/15_coding_spreadsheet_unique_id_si.csv")

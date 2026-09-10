@@ -12,10 +12,10 @@ p_load(tidyverse,
        chromote,
        httr) 
 
-rss <- read_csv("C:/AOS_db/data/17_fully_coded_url_read_clean_tagged_dates.csv") %>%
+rss <- read_csv("../data/17_fully_coded_url_read_clean_tagged_dates.csv") %>%
   select(agg_objectid, headline, full_date, week_month_year, link, article_source, agencies_involved_list, si_mention, gss_mention, potential_si_violation, attack_topic_list, attack_type_list, enacted_list, attack_summary)
 
-human_coding <- read_csv("C:/AOS_db/updating_formatting_human_coding_results/results/12_attack_title_summary.csv") %>%
+human_coding <- read_csv("../updating_formatting_human_coding_results/results/12_attack_title_summary.csv") %>%
   mutate(date = as.Date(full_date, tryFormats = c("%Y-%m-%d", "%m/%d/%Y")),
          week_of_year_date = isoweek(date),
          date = as.Date(date, format = "%Y-%m-%d"),
@@ -71,4 +71,4 @@ for(i in ap_links){
 
 all_the_data <- bind_rows(all_the_data_no_ap, all_the_data_ap_url)
 
-write_csv(all_the_data, "C:/AOS_db/data/18_all_the_aos_data.csv")
+write_csv(all_the_data, "../data/18_all_the_aos_data.csv")

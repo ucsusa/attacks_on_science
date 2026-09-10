@@ -18,7 +18,7 @@ p_load(tidyverse,
        grid) 
 
 
-all_the_data <- read_excel("C:/AOS_db/data/11_coding_spreadsheet.xlsx") %>%
+all_the_data <- read_excel("../data/11_coding_spreadsheet.xlsx") %>%
   mutate(`FULL DATE` = as.Date(`FULL DATE`, format = "%m/%d/%Y"),
          news_cycle = interval(as.Date(`FULL DATE`) - 2, as.Date(`FULL DATE`) + 2)) %>%
   filter(`AOS PRESENCE` == 1,
@@ -112,7 +112,11 @@ for(k in compareobjectid){
     row.names = NULL, stringsAsFactors = FALSE)
   
   descriptions_long <- descriptions_long %>%
-    filter(text != "") %>%
+    filter(text != "",
+           !is.null(text),
+           nchar(text) > 1,
+           trimws(text) != "",
+           grepl("[A-Za-z0-9]", text)) %>%
     group_by(doc_id) %>%
     mutate(total_num_text = n()) %>%
     ungroup() %>%
@@ -138,7 +142,7 @@ all_combos_groups <- all_combos_groups %>%
 #The New York Times and the Washington Post are legacy sources and are no longer used
 #If the sources are the same, choose the chronologically first article
 
-priority_sources <- c("The Hill", "Associated Press", "Stat News", "E&E News", "Stateline Democracy", "Gov Exec", "National Broadcasting Corporation", "National Public Radio", "New York Times", "Washington Post")
+priority_sources <- c("The Hill", "Associated Press", "Stat News", "E&E News", "Politico", "Stateline Democracy", "Gov Exec", "National Broadcasting Corporation", "National Public Radio", "New York Times", "Washington Post")
 
 aoses_clean_agg_final <- all_combos_groups %>%
   mutate(article_source = factor(article_source, levels = priority_sources)) %>%
@@ -160,4 +164,4 @@ aoses_clean_agg_final <- bind_rows(aoses_clean_agg_final, all_the_data_no_agg) %
   select(-c(group_count, group_num, group_id, compareobjectid, news_cycle)) %>%
   distinct()
 
-write_csv(aoses_clean_agg_final, "C:/AOS_db/data/12_aoses_clean_no_multiples.csv")
+write_csv(aoses_clean_agg_final, "../data/12_aoses_clean_no_multiples.csv")

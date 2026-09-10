@@ -11,10 +11,10 @@ p_load(tidyverse,
        rebus,
        readxl)
 
-clean_aos <- read_csv("C:/AOS_db/data/07_aos_clean.csv")
+clean_aos <- read_csv("../data/07_aos_clean.csv")
 
 #Read in spreadsheet with government agencies UCS tracks
-gov_agencies <- read_excel("C:/AOS_db/info_tables/Search Terms AOS.xlsx") %>%
+gov_agencies <- read_excel("../info_tables/Search Terms AOS.xlsx") %>%
   filter(category == "government") %>%
   mutate(search_term_lower = tolower(search_term))
 
@@ -64,4 +64,4 @@ remove_duplicates_in_cell <- function(cell_string) {
 
 aos_clean_agency$gov_agency <- sapply(aos_clean_agency$gov_agency, remove_duplicates_in_cell)
 
-write_csv(aos_clean_agency, "C:/AOS_db/data/08_aos_clean_gov.csv")
+write_csv(aos_clean_agency, "../data/08_aos_clean_gov.csv")

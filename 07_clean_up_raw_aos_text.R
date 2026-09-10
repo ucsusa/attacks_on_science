@@ -15,7 +15,7 @@ gc()
 ### Clean up Article Text Before Next Data Processing Step ###
 
 
-filtered_read_articles <- read_csv("C:/AOS_db/data/06_aos_raw.csv") %>%
+filtered_read_articles <- read_csv("../data/06_aos_raw.csv") %>%
   filter(source != "Gov Info") %>%
   select(title, description, pub_date, URL, source, description_original, url_text) %>%
   unique()
@@ -53,4 +53,4 @@ aoses_clean <- aoses_raw %>%
          url_text = str_remove_all(url_text, ". .             . ."))
 
 #Create data frame for next R script
-write_csv(aoses_clean, "C:/AOS_db/data/07_aos_clean.csv")
+write_csv(aoses_clean, "../data/07_aos_clean.csv")
