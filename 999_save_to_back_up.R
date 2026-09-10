@@ -1,44 +1,20 @@
-#### R SCRIPT PURPOSE: 
-#### Back up all saved AOS data
-#### Runs weekly
+##This script saves results and scripts to a backup server on Azure
 
+if (!require("pacman")) { install.packages("pacman"); library(pacman) }
+p_load(tidyverse, AzureStor, AzureAuth)
 
-### Logistics for R Script ###
+tok  <- get_managed_token("https://storage.azure.com/")
+ep   <- storage_endpoint("https://ucsaosdata.blob.core.windows.net", token = tok)
 
-
-if (!require("pacman")) {
-  install.packages("pacman")
-  library(pacman)
-} 
-
-p_load(tidyverse) 
-
-
-### Back Up All AOS Data, Scripts, Processes ###
-
-source_folder <- "C:/AOS_db/data"
-
-destination_folder <- "C:/Users/KristieEllickson/OneDrive - Union of Concerned Scientists/Jules Barbati-Dajches's files - Backup_from_server"
-
-if (!dir.exists(destination_folder)) {
-  dir.create(destination_folder, recursive = TRUE)
+cont <- storage_container(ep, "aos-backup")
+backup_dir <- function(cont, local, prefix) {
+  if (!dir.exists(local)) { message("skip (missing): ", local); return(invisible()) }
+  files <- list.files(local, recursive = TRUE, full.names = FALSE)
+  if (!length(files)) { message("skip (empty): ", local); return(invisible()) }
+  storage_multiupload(cont, src = file.path(local, files), dest = file.path(prefix, files))
+  message("backed up ", length(files), " files from ", local)
 }
-
-file.copy(from = source_folder, to = destination_folder, recursive = TRUE)
-
-##Copy the r scripts
-source_folder <- "C:/AOS_db/r_scripts"
-
-destination_folder <- "C:/Users/KristieEllickson/OneDrive - Union of Concerned Scientists/Jules Barbati-Dajches's files - Backup_from_server/r_scripts"
-
-if (!dir.exists(destination_folder)) {
-  dir.create(destination_folder, recursive = TRUE)
-}
-
-file.copy(from = source_folder, to = destination_folder, recursive = TRUE)
-
-source_folder <- "C:/AOS_db/newssources_to_attacksonscience.pptx"
-
-destination_folder <- "C:/Users/KristieEllickson/OneDrive - Union of Concerned Scientists/Jules Barbati-Dajches's files - Backup_from_server"
-
-file.copy(from = source_folder, to = destination_folder, recursive = TRUE)
+backup_dir(cont, "../data",      "data")
+backup_dir(cont, "../r_scripts", "r_scripts")
+pptx <- "../newssources_to_attacksonscience.pptx"
+if (file.exists(pptx)) { storage_upload(cont, pptx, basename(pptx)); message("backed up ", basename(pptx)) } else { message("skip (missing): ", pptx) }
