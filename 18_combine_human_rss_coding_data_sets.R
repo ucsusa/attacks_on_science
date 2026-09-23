@@ -57,7 +57,7 @@ for(i in ap_links){
   all_the_data_ap_split <- filter(all_the_data_ap, link == i)
   b <- ChromoteSession$new()
   Sys.sleep(4)
-  b$Network$setUserAgentOverride(userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
+  b$Network$setUserAgentOverride(userAgent = useragent)
   Sys.sleep(4)
   b$Page$navigate(i)
   Sys.sleep(4)

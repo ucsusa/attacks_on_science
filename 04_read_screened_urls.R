@@ -32,6 +32,27 @@ unread_screened_feed <- read_csv("../data/02_rss_feed_screened_dfs.csv")
 ##Create variables used multiple times in the script
 useragent  <- "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
 
+#Create functions for ensuring browser is still live and to fully recycle the shared browser AND replace the registered global used periodically for memory hygiene.
+
+aos_close_handle <- function(h) {
+  tryCatch({
+    if (inherits(h, "LiveHTML")) {
+      h$session$close()
+    } else if (inherits(h, "ChromoteSession")) {
+      h$close()
+    }
+  }, error = function(e) invisible(NULL))
+}
+
+aos_reset_browser <- function() {
+  tryCatch({
+    if (chromote::has_default_chromote_object()) {
+      try(chromote::default_chromote_object()$close(), silent = TRUE)
+    }
+    chromote::set_default_chromote_object(chromote::Chromote$new())
+  }, error = function(e) invisible(NULL))
+}
+
 #Create separate df of urls from Gov Exec and Stateline Democracy
 #They already have full text in their RSS feeds
 #Will add these back in at the end
@@ -174,6 +195,7 @@ url_text <- tryCatch({
     Sys.sleep(4)
     
     #Navigate to article webpage, via subscriber URL
+    aos_close_handle(b)
     b <- read_html_live(subscriber_url_test)
     Sys.sleep(4)
     
@@ -213,6 +235,7 @@ url_text <- tryCatch({
     Sys.sleep(4)
     
     #Navigate to article webpage, via subscriber URL
+    aos_close_handle(b)
     b <- read_html_live(subscriber_url_test)
     Sys.sleep(4)
     
@@ -234,8 +257,7 @@ url_text <- tryCatch({
     screened_rss_feed_db_split <- mutate(screened_rss_feed_db_split, url_text = url_text)
     
     tryCatch({
-      f <- chromote::default_chromote_object()
-      f$close()
+      aos_close_handle(b)
     }, error = function(e) {
       print(e$message)
     })
@@ -259,8 +281,7 @@ url_text <- tryCatch({
           paste(., collapse = ". ")
         
         tryCatch({
-          f <- chromote::default_chromote_object()
-          f$close()
+          aos_close_handle(b)
         }, error = function(e) {
           print(e$message)
         })
@@ -301,8 +322,7 @@ url_text <- tryCatch({
     Sys.sleep(10)
     
     tryCatch({
-      f <- chromote::default_chromote_object()
-      f$close()
+      aos_close_handle(b)
     }, error = function(e) {
       print(e$message)
     })
@@ -332,10 +352,10 @@ url_text <- tryCatch({
   
   ticker <- ticker + 1
   print(ticker)
+  if (ticker %% 25 == 0) aos_reset_browser()
   
   tryCatch({
-    f <- chromote::default_chromote_object()
-    f$close()
+    aos_close_handle(b)
   }, error = function(e) {
     print(e$message)
   })
