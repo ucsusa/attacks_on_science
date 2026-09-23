@@ -19,9 +19,11 @@ hc_ss_fil <- human_coding_spreadsheet %>%
 hc_ss_titles <- unique(hc_ss_fil$HEADLINE)
 hc_ss_titles <- map(hc_ss_titles, ~paste0(., ".pdf"))
 
-pdf_articles <- list.files("../pdf_articles")
+setwd("../pdf_articles")
+
+pdf_articles <- list.files()
 
 pdf_articles_coded <- pdf_articles[pdf_articles %in% hc_ss_titles]
 
-setwd("../pdf_articles")
+
 file.remove(pdf_articles_coded)

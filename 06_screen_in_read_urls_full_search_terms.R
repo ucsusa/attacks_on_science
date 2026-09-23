@@ -61,9 +61,11 @@ articles_already_read_in <- read_csv("../data/06_screened_read_articles_complete
 
 articles_already_read_in_titles <- unique(articles_already_read_in$clean_title)
 
+setwd("../pdf_articles")
+
 need_pdf <- filter(need_pdf, !clean_title %in% articles_already_read_in_titles)
 
-pdf_folder <- list.files("../pdf_articles")
+pdf_folder <- list.files()
 
 already_read_pdfs_df <- data.frame(article_names = pdf_folder, stringsAsFactors = FALSE)
 
@@ -78,7 +80,6 @@ already_read_pdfs_titles <- already_read_pdfs_df %>%
          clean_title = str_trim(clean_title))
 
 #Remove pdfs with small file sizes, they are blank
-setwd("../pdf_articles")
 
 already_read_pdfs_size <- data.frame(stringsAsFactors = FALSE)
 
@@ -112,15 +113,13 @@ screened_articles_w_pdf <- left_join(need_pdf, already_read_pdfs_titles_df, by =
 #Join matching pdf from the folder, pull in text into the url_text column for articles not scraped properly.
 checking_4_read_all <- data.frame(stringsAsFactors = FALSE)
 
-setwd("../pdf_articles")
-
 ticker <- 0
 
 for(i in 1:nrow(screened_articles_w_pdf)){ 
       checking_4_read_split <- screened_articles_w_pdf %>%
     slice(i)
   if(nrow(checking_4_read_split) > 0){
-    pdf_to_read <- paste0("../pdf_articles/",checking_4_read_split$article_names)
+    pdf_to_read <- checking_4_read_split$article_names
     url_text_read <-  pdftools::pdf_text(pdf_to_read)
     url_text_read <- as.character(url_text_read) %>% 
       paste(., collapse = ". ") %>% 
