@@ -61,9 +61,11 @@ articles_already_read_in <- read_csv("../data/06_screened_read_articles_complete
 
 articles_already_read_in_titles <- unique(articles_already_read_in$clean_title)
 
+setwd("../pdf_articles")
+
 need_pdf <- filter(need_pdf, !clean_title %in% articles_already_read_in_titles)
 
-pdf_folder <- list.files("../pdf_articles")
+pdf_folder <- list.files()
 
 already_read_pdfs_df <- data.frame(article_names = pdf_folder, stringsAsFactors = FALSE)
 
@@ -78,7 +80,6 @@ already_read_pdfs_titles <- already_read_pdfs_df %>%
          clean_title = str_trim(clean_title))
 
 #Remove pdfs with small file sizes, they are blank
-setwd("../pdf_articles")
 
 already_read_pdfs_size <- data.frame(stringsAsFactors = FALSE)
 

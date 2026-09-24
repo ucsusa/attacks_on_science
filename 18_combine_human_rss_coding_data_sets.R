@@ -12,9 +12,6 @@ p_load(tidyverse,
        chromote,
        httr) 
 
-##Create variables
-useragent  <- "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
-
 rss <- read_csv("../data/17_fully_coded_url_read_clean_tagged_dates.csv") %>%
   select(agg_objectid, headline, full_date, week_month_year, link, article_source, agencies_involved_list, si_mention, gss_mention, potential_si_violation, attack_topic_list, attack_type_list, enacted_list, attack_summary)
 

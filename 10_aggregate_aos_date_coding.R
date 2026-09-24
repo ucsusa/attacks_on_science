@@ -165,7 +165,7 @@ aoses_clean_agg_final <- bind_rows(aoses_clean_agg, aoses_clean_agg_2) %>%
 #Where there are multiples, pull the article to go into the database using the source prioritization list
 #The New York Times and the Washington Post are legacy sources and are no longer used
 
-priority_sources <- c("The Hill", "Associated Press", "Stat News", "E&E News", "Stateline Democracy", "Gov Exec", "National Broadcasting Corporation", "National Public Radio", "New York Times", "Washington Post")
+priority_sources <- c("The Hill", "Associated Press", "Stat News", "E&E News", "Politico", "Stateline Democracy", "Gov Exec", "National Broadcasting Corporation", "National Public Radio", "New York Times", "Washington Post")
 
 aoses_clean_agg_final <- aoses_clean_agg_final %>%
   mutate(article_source = factor(source, levels = priority_sources)) %>%

@@ -1,7 +1,7 @@
 Readme for Attacks on Science Tracker Data Process
 ================
 
-##### Last updated: 06/22/2026
+##### Last updated: 09/10/2026
 
 The Union of Concerned Scientists (UCS) has been documenting federal
 attacks on science and advocating for scientific integrity protections

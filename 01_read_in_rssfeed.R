@@ -29,7 +29,7 @@ nbc_feed <- tidyfeed("https://feeds.nbcnews.com/nbcnews/public/news") %>%
 
 
 #Pulling daily National Public Radio (NPR) RSS Feed and cleaning it up
-npr_feed <- tidyfeed("https://feeds.npr.org/1003/rss.xml") %>% 
+npr_feed <- tidyfeed("https://rss.app/feeds/bMSQqU14WeS5WGus.xml") %>% 
   mutate(title = item_title, 
          description = item_description, 
          pub_date = item_pub_date, 
@@ -49,46 +49,30 @@ ap_feed <- tidyfeed("https://rss.app/feeds/6t9bqguHo638jpxk.xml") %>%
   select(title:source) 
 
 
-#Pulling daily E&E News RSS Feed and cleaning it up
-## Politico purchased E&E News, and we will update this part of hte script starting on August 24, 2026. This link to rss feed is no longer pulling anything more recent than August 8, 2026. https://rss.politico.com/eenews-eed
+#Pulling daily Politico rss feed and cleaning it up
 
-# e_and_e_news_feed_1 <- tidyfeed("https://rss.politico.com/eenews-eed") %>%
-#   mutate(title = item_title, 
-#          description = item_description, 
-#          pub_date = item_pub_date, 
-#          URL = item_link, 
-#          source = "E&E News") %>% 
-#   select(title:source) 
+feed_categories <- c("congress", "healthcare", "defense", "economy", "energy", "politics-news")
 
-##This is the "Energy and Environment" news from Politico
-e_and_e_news_feed_2 <- tidyfeed("https://rss.politico.com/energy.xml") %>%
-  mutate(title = item_title, 
+feed_urls <- sapply(feed_categories, function(w) {
+paste0("https://rss.politico.com/", w, ".xml")
+})
+
+names(feed_urls) <- NULL
+
+politico_feeds <- data.frame()
+for(i in feed_urls){
+  politico_feed <- tidyfeed(i) %>%
+    mutate(title = item_title, 
          description = item_description, 
          pub_date = item_pub_date, 
          URL = item_link, 
-         source = "E&E News") %>% 
+         source = "Politico") %>% 
   select(title:source) 
+  
+  politico_feeds <- bind_rows(politico_feed, politico_feeds) %>%
+    distinct()
+}
 
-e_and_e_news_feed_3 <- tidyfeed("https://rss.politico.com/healthcare.xml") %>% 
-  mutate(title = item_title, 
-         description = item_description, 
-         pub_date = item_pub_date, 
-         URL = item_link, 
-         source = "E&E News") %>% 
-  select(title:source) 
-
-##This URL will go away on Aug 31st, so we will retire this line on that date.
-e_and_e_news_feed_4 <- tidyfeed("https://www.eenews.net/articles/feed/") %>% 
-  mutate(title = item_title, 
-         description = item_description, 
-         pub_date = item_pub_date, 
-         URL = item_link, 
-         source = "E&E News") %>% 
-  select(title:source) 
-
-
-e_and_e_news_feed <- bind_rows(e_and_e_news_feed_2, e_and_e_news_feed_3, e_and_e_news_feed_4) %>%
-  distinct()
 
 
 #Pulling daily The Hill RSS Feed and cleaning it up
@@ -178,7 +162,7 @@ all_feed <- bind_rows(nbc_feed,
                       npr_feed,
                       ap_feed, 
                       the_hill_feed, 
-                      e_and_e_news_feed,
+                      politico_feeds,
                       govexec_feed_df,
                       stateline_demo_feed,
                       statnews_demo_feed) %>%
