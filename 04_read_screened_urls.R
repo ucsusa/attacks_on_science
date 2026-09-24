@@ -1,5 +1,6 @@
+source("../r_scripts/aos_secrets.R")
 #### R SCRIPT PURPOSE: 
-#### Compiles article RSS feeds that passed first AOS search term filter (in script 02) and collects article text via targeted URL scraping.
+#### Compiles article RSS feeds that passed through the first AOS search term filter (in script 02) and collects article text via targeted URL scraping.
 #### Runs 1x/week
 
 #### NOTE: The user must have Chrome installed since it opens a Chrome instance to read each article.
@@ -62,7 +63,9 @@ govex_sl <- unread_screened_feed %>%
 
 
 #Remove articles from URL scraping pile if they already have pdfs saved in the pdf folder
-pdf_folder <- list.files("../pdf_articles")
+setwd("../pdf_articles")
+
+pdf_folder <- list.files()
 
 already_read_pdfs_df <- data.frame(article_names = pdf_folder, stringsAsFactors = FALSE)
 
@@ -75,7 +78,6 @@ already_read_pdfs_titles <- already_read_pdfs_df %>%
          clean_title = str_trim(clean_title))
 
 #Remove pdfs with small file sizes (they are blank)
-setwd("../pdf_articles")
 
 #Cleaning up PDF files and names
 already_read_pdfs_size <- data.frame(stringsAsFactors = FALSE)
@@ -205,10 +207,10 @@ url_text <- tryCatch({
     b$click("#login")
     Sys.sleep(4)
     
-    b$type("#email", key_list(service = "eandenews")$username)
+    b$type("#email", aos_get_secret("eandenews-username"))
     Sys.sleep(4)
     
-    b$type("#password", key_get(service = "eandenews", key_list(service = "eandenews")$username))
+    b$type("#password", aos_get_secret("eandenews-password"))
     b$click("#pro > div > div > div.page__form > div > form > fieldset > div.form-section.button")
     Sys.sleep(4)
     
@@ -263,7 +265,7 @@ url_text <- tryCatch({
     })
     
     Sys.sleep(10)
-    } else if(screened_rss_feed_db_split$source == "E&E News" & grepl("politico", screened_rss_feed_db_split$URL)) {
+    } else if(screened_rss_feed_db_split$source %in% c("E&E News", "Politico") & grepl("politico", screened_rss_feed_db_split$URL)) {
       
       url_test <- screened_rss_feed_db_split$URL
       
@@ -296,9 +298,9 @@ url_text <- tryCatch({
   Sys.sleep(4)
   b$session$Network$setUserAgentOverride(userAgent = useragent)
   Sys.sleep(4)
-  b$type("#login-email", key_list(service = "statnews")$username)
+  b$type("#login-email", aos_get_secret("statnews-username"))
   Sys.sleep(4)
-  b$type("#login-password", key_get(service = "statnews", key_list(service = "statnews")$username))
+  b$type("#login-password", aos_get_secret("statnews-password"))
   b$click("#login > form:nth-child(2) > div:nth-child(3) > input")
   Sys.sleep(4)
   #Writing and running a function for other outlets' articles using html_text
@@ -383,8 +385,6 @@ screened_rss_feed_db_text <- bind_rows(scraped_articles, screened_rss_feed_db_te
 screened_rss_feed_db_text <- bind_rows(screened_rss_feed_db_text, govex_sl) %>%
   distinct()
 
-
 ### Getting Data Ready for Next R Script ###
-
 
 write_csv(screened_rss_feed_db_text, "../data/04_rss_feed_screened_read_articles_dfs.csv")
